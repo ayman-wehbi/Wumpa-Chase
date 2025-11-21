@@ -3,8 +3,9 @@ import { View, StyleSheet } from 'react-native';
 import { Checkbox, Text, useTheme, Divider, Card } from 'react-native-paper';
 import { PlatinumTimeTrial } from '../../types';
 import { AttemptCounter } from '../common/AttemptCounter';
-import { DateDisplay } from '../common/DateDisplay';
-import { TimeInput } from '../common/TimeInput';
+import { DatePicker } from '../common/DatePicker';
+import { TimePicker } from '../common/TimePicker';
+import { DifficultyRating } from '../common/DifficultyRating';
 
 interface PlatinumSectionProps {
   platinum: PlatinumTimeTrial;
@@ -12,6 +13,8 @@ interface PlatinumSectionProps {
   onCompletionChange: (levelId: string, completed: boolean) => void;
   onTimeChange: (levelId: string, time: string) => void;
   onAttemptsChange: (levelId: string, increment: boolean) => void;
+  onDifficultyChange: (levelId: string, difficulty: number) => void;
+  onDateChange: (levelId: string, date: string) => void;
 }
 
 export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
@@ -20,6 +23,8 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
   onCompletionChange,
   onTimeChange,
   onAttemptsChange,
+  onDifficultyChange,
+  onDateChange,
 }) => {
   const theme = useTheme();
 
@@ -48,11 +53,14 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
 
           {platinum.completed && (
             <>
-              <TimeInput
+              <TimePicker
                 time={platinum.time}
                 onTimeChange={time => onTimeChange(levelId, time)}
               />
-              <DateDisplay date={platinum.completionDate} />
+              <DatePicker
+                date={platinum.completionDate}
+                onChange={date => onDateChange(levelId, date)}
+              />
             </>
           )}
 
@@ -60,6 +68,11 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
             attempts={platinum.attempts}
             onIncrement={() => onAttemptsChange(levelId, true)}
             onDecrement={() => onAttemptsChange(levelId, false)}
+          />
+
+          <DifficultyRating
+            value={platinum.difficulty}
+            onChange={difficulty => onDifficultyChange(levelId, difficulty)}
           />
         </View>
       </Card.Content>
