@@ -23,8 +23,12 @@ interface ProgressContextType {
   updatePlatinumCompletion: (levelId: string, completed: boolean) => void;
   updatePlatinumTime: (levelId: string, time: string) => void;
   updatePlatinumAttempts: (levelId: string, increment: boolean) => void;
+  updatePlatinumDifficulty: (levelId: string, difficulty: number) => void;
+  updatePlatinumDate: (levelId: string, date: string) => void;
   updateNSanelyCompletion: (levelId: string, completed: boolean) => void;
   updateNSanelyAttempts: (levelId: string, increment: boolean) => void;
+  updateNSanelyDifficulty: (levelId: string, difficulty: number) => void;
+  updateNSanelyDate: (levelId: string, date: string) => void;
   resetAllProgress: () => void;
 }
 
@@ -187,6 +191,58 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({
     }));
   };
 
+  const updatePlatinumDifficulty = (levelId: string, difficulty: number) => {
+    updateLevel(levelId, level => ({
+      ...level,
+      progress: {
+        ...level.progress,
+        platinumTimeTrial: {
+          ...level.progress.platinumTimeTrial,
+          difficulty,
+        },
+      },
+    }));
+  };
+
+  const updatePlatinumDate = (levelId: string, date: string) => {
+    updateLevel(levelId, level => ({
+      ...level,
+      progress: {
+        ...level.progress,
+        platinumTimeTrial: {
+          ...level.progress.platinumTimeTrial,
+          completionDate: date,
+        },
+      },
+    }));
+  };
+
+  const updateNSanelyDifficulty = (levelId: string, difficulty: number) => {
+    updateLevel(levelId, level => ({
+      ...level,
+      progress: {
+        ...level.progress,
+        nsanelyPerfectRelic: {
+          ...level.progress.nsanelyPerfectRelic,
+          difficulty,
+        },
+      },
+    }));
+  };
+
+  const updateNSanelyDate = (levelId: string, date: string) => {
+    updateLevel(levelId, level => ({
+      ...level,
+      progress: {
+        ...level.progress,
+        nsanelyPerfectRelic: {
+          ...level.progress.nsanelyPerfectRelic,
+          completionDate: date,
+        },
+      },
+    }));
+  };
+
   const resetAllProgress = async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
@@ -203,8 +259,12 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({
     updatePlatinumCompletion,
     updatePlatinumTime,
     updatePlatinumAttempts,
+    updatePlatinumDifficulty,
+    updatePlatinumDate,
     updateNSanelyCompletion,
     updateNSanelyAttempts,
+    updateNSanelyDifficulty,
+    updateNSanelyDate,
     resetAllProgress,
   };
 
