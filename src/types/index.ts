@@ -3,15 +3,16 @@
  */
 
 /**
- * Represents the 6 gem checkboxes for each mode (Normal/N.Verted)
+ * Represents the 6 gems for each mode (Normal/N.Verted)
+ * Each gem is earned by completing specific challenges
  */
 export interface GemCheckboxes {
-  allBoxes: boolean;
-  wumpa80: boolean;
-  deaths3OrLess: boolean;
-  hiddenGem: boolean;
-  nVertedAllBoxes: boolean;
-  nVertedHiddenGem: boolean;
+  wumpa40: boolean;  // Collect 40% of Wumpa fruit
+  wumpa60: boolean;  // Collect 60% of Wumpa fruit
+  wumpa80: boolean;  // Collect 80% of Wumpa fruit
+  allCrates: boolean;  // Break all crates
+  deaths3OrLess: boolean;  // Die 3 times or less
+  hiddenGem: boolean;  // Find the hidden gem
 }
 
 /**
@@ -22,6 +23,7 @@ export interface PlatinumTimeTrial {
   time?: string; // Optional time in format "MM:SS.mmm"
   completionDate?: string; // ISO date string
   attempts: number;
+  difficulty?: number; // Optional difficulty rating (1-10)
 }
 
 /**
@@ -31,6 +33,7 @@ export interface NSanelyPerfectRelic {
   completed: boolean;
   completionDate?: string; // ISO date string
   attempts: number;
+  difficulty?: number; // Optional difficulty rating (1-10)
 }
 
 /**
