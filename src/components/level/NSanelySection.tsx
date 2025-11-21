@@ -3,13 +3,16 @@ import { View, StyleSheet } from 'react-native';
 import { Checkbox, Text, useTheme, Divider, Card } from 'react-native-paper';
 import { NSanelyPerfectRelic } from '../../types';
 import { AttemptCounter } from '../common/AttemptCounter';
-import { DateDisplay } from '../common/DateDisplay';
+import { DatePicker } from '../common/DatePicker';
+import { DifficultyRating } from '../common/DifficultyRating';
 
 interface NSanelySectionProps {
   nsanely: NSanelyPerfectRelic;
   levelId: string;
   onCompletionChange: (levelId: string, completed: boolean) => void;
   onAttemptsChange: (levelId: string, increment: boolean) => void;
+  onDifficultyChange: (levelId: string, difficulty: number) => void;
+  onDateChange: (levelId: string, date: string) => void;
 }
 
 export const NSanelySection: React.FC<NSanelySectionProps> = ({
@@ -17,6 +20,8 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
   levelId,
   onCompletionChange,
   onAttemptsChange,
+  onDifficultyChange,
+  onDateChange,
 }) => {
   const theme = useTheme();
 
@@ -44,13 +49,21 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
           />
 
           {nsanely.completed && (
-            <DateDisplay date={nsanely.completionDate} />
+            <DatePicker
+              date={nsanely.completionDate}
+              onChange={date => onDateChange(levelId, date)}
+            />
           )}
 
           <AttemptCounter
             attempts={nsanely.attempts}
             onIncrement={() => onAttemptsChange(levelId, true)}
             onDecrement={() => onAttemptsChange(levelId, false)}
+          />
+
+          <DifficultyRating
+            value={nsanely.difficulty}
+            onChange={difficulty => onDifficultyChange(levelId, difficulty)}
           />
         </View>
       </Card.Content>
