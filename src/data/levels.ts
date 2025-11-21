@@ -5,20 +5,20 @@ import { LevelData, LevelProgress } from '../types';
  */
 const createEmptyProgress = (): LevelProgress => ({
   normalMode: {
-    allBoxes: false,
+    wumpa40: false,
+    wumpa60: false,
     wumpa80: false,
+    allCrates: false,
     deaths3OrLess: false,
     hiddenGem: false,
-    nVertedAllBoxes: false,
-    nVertedHiddenGem: false,
   },
   nVertedMode: {
-    allBoxes: false,
+    wumpa40: false,
+    wumpa60: false,
     wumpa80: false,
+    allCrates: false,
     deaths3OrLess: false,
     hiddenGem: false,
-    nVertedAllBoxes: false,
-    nVertedHiddenGem: false,
   },
   platinumTimeTrial: {
     completed: false,
