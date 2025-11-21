@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Card, Text, IconButton, useTheme } from 'react-native-paper';
-import { LevelData } from '../../types';
+import { Card, Text, IconButton, useTheme, Divider } from 'react-native-paper';
+import { LevelData, GemCheckboxes } from '../../types';
 import { useProgress } from '../../context/ProgressContext';
 import { LevelProgress } from './LevelProgress';
-import { GemCheckboxes } from './GemCheckboxes';
+import { GemRow } from './GemRow';
 import { PlatinumSection } from './PlatinumSection';
 import { NSanelySection } from './NSanelySection';
 
@@ -20,11 +20,20 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
     updatePlatinumCompletion,
     updatePlatinumTime,
     updatePlatinumAttempts,
+    updatePlatinumDifficulty,
+    updatePlatinumDate,
     updateNSanelyCompletion,
     updateNSanelyAttempts,
+    updateNSanelyDifficulty,
+    updateNSanelyDate,
   } = useProgress();
 
   const handleToggle = () => setExpanded(!expanded);
+
+  const handleGemToggle = (mode: 'normalMode' | 'nVertedMode') => (gemType: keyof GemCheckboxes) => {
+    const currentValue = level.progress[mode][gemType];
+    updateGemCheckbox(level.id, mode, gemType, !currentValue);
+  };
 
   return (
     <Card style={styles.card} mode="elevated">
@@ -48,23 +57,21 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
 
       {expanded && (
         <Card.Content style={styles.expandedContent}>
-          <View style={styles.section}>
-            <GemCheckboxes
-              gems={level.progress.normalMode}
-              mode="normalMode"
-              levelId={level.id}
-              onCheckboxChange={updateGemCheckbox}
-            />
-          </View>
+          <GemRow
+            mode="Normal Mode"
+            gems={level.progress.normalMode}
+            onGemPress={handleGemToggle('normalMode')}
+          />
 
-          <View style={styles.section}>
-            <GemCheckboxes
-              gems={level.progress.nVertedMode}
-              mode="nVertedMode"
-              levelId={level.id}
-              onCheckboxChange={updateGemCheckbox}
-            />
-          </View>
+          <Divider style={styles.divider} />
+
+          <GemRow
+            mode="N.Verted Mode"
+            gems={level.progress.nVertedMode}
+            onGemPress={handleGemToggle('nVertedMode')}
+          />
+
+          <Divider style={styles.divider} />
 
           <PlatinumSection
             platinum={level.progress.platinumTimeTrial}
@@ -72,6 +79,8 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
             onCompletionChange={updatePlatinumCompletion}
             onTimeChange={updatePlatinumTime}
             onAttemptsChange={updatePlatinumAttempts}
+            onDifficultyChange={updatePlatinumDifficulty}
+            onDateChange={updatePlatinumDate}
           />
 
           <NSanelySection
@@ -79,6 +88,8 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
             levelId={level.id}
             onCompletionChange={updateNSanelyCompletion}
             onAttemptsChange={updateNSanelyAttempts}
+            onDifficultyChange={updateNSanelyDifficulty}
+            onDateChange={updateNSanelyDate}
           />
         </Card.Content>
       )}
@@ -94,7 +105,7 @@ const styles = StyleSheet.create({
   expandedContent: {
     paddingTop: 8,
   },
-  section: {
-    marginBottom: 8,
+  divider: {
+    marginVertical: 12,
   },
 });
