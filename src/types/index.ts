@@ -24,6 +24,7 @@ export interface PlatinumTimeTrial {
   completionDate?: string; // ISO date string
   attempts: number;
   difficulty?: number; // Optional difficulty rating (1-10)
+  note?: string; // Optional note from user
 }
 
 /**
@@ -34,6 +35,7 @@ export interface NSanelyPerfectRelic {
   completionDate?: string; // ISO date string
   attempts: number;
   difficulty?: number; // Optional difficulty rating (1-10)
+  note?: string; // Optional note from user
 }
 
 /**
