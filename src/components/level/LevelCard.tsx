@@ -22,10 +22,16 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
     updatePlatinumAttempts,
     updatePlatinumDifficulty,
     updatePlatinumDate,
+    updatePlatinumNote,
+    deletePlatinumNote,
+    resetPlatinum,
     updateNSanelyCompletion,
     updateNSanelyAttempts,
     updateNSanelyDifficulty,
     updateNSanelyDate,
+    updateNSanelyNote,
+    deleteNSanelyNote,
+    resetNSanely,
   } = useProgress();
 
   const handleToggle = () => setExpanded(!expanded);
@@ -81,6 +87,9 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
             onAttemptsChange={updatePlatinumAttempts}
             onDifficultyChange={updatePlatinumDifficulty}
             onDateChange={updatePlatinumDate}
+            onNoteChange={updatePlatinumNote}
+            onNoteDelete={deletePlatinumNote}
+            onReset={resetPlatinum}
           />
 
           <NSanelySection
@@ -90,6 +99,9 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
             onAttemptsChange={updateNSanelyAttempts}
             onDifficultyChange={updateNSanelyDifficulty}
             onDateChange={updateNSanelyDate}
+            onNoteChange={updateNSanelyNote}
+            onNoteDelete={deleteNSanelyNote}
+            onReset={resetNSanely}
           />
         </Card.Content>
       )}
