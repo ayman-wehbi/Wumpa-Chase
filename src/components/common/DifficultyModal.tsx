@@ -20,7 +20,8 @@ export const DifficultyModal: React.FC<DifficultyModalProps> = ({
 }) => {
   const theme = useTheme();
   const [selectedDifficulty, setSelectedDifficulty] = useState(currentDifficulty);
-  const ratings = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const row1 = [1, 2, 3, 4, 5];
+  const row2 = [6, 7, 8, 9, 10];
 
   // Update local state when currentDifficulty changes
   useEffect(() => {
@@ -48,19 +49,35 @@ export const DifficultyModal: React.FC<DifficultyModalProps> = ({
           <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
             Select difficulty rating (1-10)
           </Text>
-          <View style={styles.chipContainer}>
-            {ratings.map((rating) => (
-              <Chip
-                key={rating}
-                mode={selectedDifficulty === rating ? 'flat' : 'outlined'}
-                selected={selectedDifficulty === rating}
-                onPress={() => setSelectedDifficulty(rating)}
-                style={styles.chip}
-                compact
-              >
-                {rating}
-              </Chip>
-            ))}
+          <View style={styles.container}>
+            <View style={styles.chipRow}>
+              {row1.map((rating) => (
+                <Chip
+                  key={rating}
+                  mode={selectedDifficulty === rating ? 'flat' : 'outlined'}
+                  selected={selectedDifficulty === rating}
+                  onPress={() => setSelectedDifficulty(rating)}
+                  style={styles.chip}
+                  compact
+                >
+                  {rating}
+                </Chip>
+              ))}
+            </View>
+            <View style={styles.chipRow}>
+              {row2.map((rating) => (
+                <Chip
+                  key={rating}
+                  mode={selectedDifficulty === rating ? 'flat' : 'outlined'}
+                  selected={selectedDifficulty === rating}
+                  onPress={() => setSelectedDifficulty(rating)}
+                  style={styles.chip}
+                  compact
+                >
+                  {rating}
+                </Chip>
+              ))}
+            </View>
           </View>
         </Dialog.Content>
         <Dialog.Actions>
@@ -75,11 +92,14 @@ export const DifficultyModal: React.FC<DifficultyModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+  container: {
     marginTop: 8,
+    gap: 8,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: 6,
+    justifyContent: 'center',
   },
   chip: {
     height: 32,
