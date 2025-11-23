@@ -44,14 +44,22 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
 }) => {
   const theme = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [menuKey, setMenuKey] = useState(0);
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showNoteView, setShowNoteView] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const openMenu = () => setMenuVisible(true);
-  const closeMenu = () => setMenuVisible(false);
+  const openMenu = () => {
+    setMenuVisible(true);
+  };
+
+  const closeMenu = () => {
+    setMenuVisible(false);
+    // Force menu to remount on next open by changing key
+    setMenuKey(prev => prev + 1);
+  };
 
   const handleSetDifficulty = () => {
     closeMenu();
@@ -78,9 +86,13 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
     setShowNoteView(false);
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: string, compact = false) => {
     if (!dateString) return null;
     const date = new Date(dateString);
+    if (compact) {
+      // Short numeric format: "1/1/25"
+      return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
+    }
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -107,38 +119,19 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
     <Card style={styles.card} mode="outlined">
       <Card.Content>
         <View style={styles.header}>
-          <Text
-            variant="titleSmall"
-            style={[styles.title, { color: theme.colors.tertiary }]}
-          >
-            N.Sanely Perfect Relic
-          </Text>
-          <Menu
-            visible={menuVisible}
-            onDismiss={closeMenu}
-            anchor={
-              <IconButton
-                icon="dots-vertical"
-                size={20}
-                onPress={openMenu}
-                style={styles.menuButton}
-              />
-            }
-          >
-            <Menu.Item onPress={handleSetDifficulty} title="Set Difficulty" leadingIcon="gauge" />
-            <Menu.Item
-              onPress={handleAddEditNote}
-              title={nsanely.note ? 'Edit Note' : 'Add Note'}
-              leadingIcon="note-text"
+          <View style={styles.titleRow}>
+            <Checkbox
+              status={nsanely.completed ? 'checked' : 'unchecked'}
+              onPress={() => onCompletionChange(levelId, !nsanely.completed)}
             />
-            <Divider />
-            <Menu.Item onPress={handleReset} title="Reset" leadingIcon="restart" />
-          </Menu>
-        </View>
-        <Divider style={styles.divider} />
-
-        <View style={styles.content}>
-          <View style={styles.checkboxRow}>
+            <Text
+              variant="titleSmall"
+              style={[styles.title, { color: theme.colors.tertiary }]}
+            >
+              N.Sanely Perfect Relic
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
             {nsanely.note && (
               <IconButton
                 icon="information"
@@ -147,41 +140,81 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
                 style={styles.infoIcon}
               />
             )}
-            <View style={{ flex: 1 }}>
-              <Checkbox.Item
-                label="Completed"
-                status={nsanely.completed ? 'checked' : 'unchecked'}
-                onPress={() => onCompletionChange(levelId, !nsanely.completed)}
-                labelStyle={styles.checkboxLabel}
-                mode="android"
-                position="leading"
-                style={styles.checkbox}
-              />
-            </View>
-            {nsanely.completed && nsanely.completionDate && (
-              <Chip
-                mode="outlined"
-                compact
-                onPress={() => setShowDatePicker(true)}
-                style={styles.dateChip}
+            <View>
+              <Menu
+                key={menuKey}
+                visible={menuVisible}
+                onDismiss={closeMenu}
+                anchor={
+                  <IconButton
+                    icon="dots-vertical"
+                    size={20}
+                    onPress={openMenu}
+                    style={styles.menuButton}
+                  />
+                }
               >
-                {formatDate(nsanely.completionDate)}
-              </Chip>
-            )}
+                <Menu.Item onPress={handleSetDifficulty} title="Set Difficulty" leadingIcon="gauge" />
+                <Menu.Item
+                  onPress={handleAddEditNote}
+                  title={nsanely.note ? 'Edit Note' : 'Add Note'}
+                  leadingIcon="note-text"
+                />
+                <Divider />
+                <Menu.Item onPress={handleReset} title="Reset" leadingIcon="restart" />
+              </Menu>
+            </View>
           </View>
+        </View>
+        <Divider style={styles.divider} />
 
+        <View style={styles.content}>
           <AttemptCounter
             attempts={nsanely.attempts}
             onIncrement={() => onAttemptsChange(levelId, true)}
             onDecrement={() => onAttemptsChange(levelId, false)}
           />
 
-          {/* Display current difficulty as info chip */}
-          {nsanely.difficulty && (
-            <View style={styles.infoRow}>
-              <Chip mode="flat" compact icon="gauge" style={styles.infoChip}>
-                Difficulty: {nsanely.difficulty}
-              </Chip>
+          {/* Display current difficulty and date as info chips */}
+          {(nsanely.difficulty || nsanely.completionDate) && (
+            <View style={[styles.infoRow, (() => {
+              const badgeCount = [nsanely.difficulty, nsanely.completionDate].filter(Boolean).length;
+              return badgeCount === 2 ? { gap: 2, paddingHorizontal: 0 } : {};
+            })()]}>
+              {(() => {
+                const badgeCount = [nsanely.difficulty, nsanely.completionDate].filter(Boolean).length;
+                const chipStyle = badgeCount >= 2
+                  ? [styles.infoChip, { flex: 1, minWidth: 0, maxWidth: '50%' as '50%' }]
+                  : styles.infoChip;
+
+                return (
+                  <>
+                    {nsanely.difficulty && (
+                      <Chip
+                        mode="flat"
+                        icon="gauge"
+                        style={chipStyle}
+                        textStyle={styles.chipText}
+                        compact
+                      >
+                        {badgeCount === 2 ? `D${nsanely.difficulty}` : `Diff: ${nsanely.difficulty}`}
+                      </Chip>
+                    )}
+                    {nsanely.completionDate && (
+                      <Chip
+                        mode="flat"
+                        icon="calendar-check"
+                        style={chipStyle}
+                        textStyle={styles.chipText}
+                        onPress={() => setShowDatePicker(true)}
+                        compact
+                      >
+                        {formatDate(nsanely.completionDate, badgeCount === 2)}
+                      </Chip>
+                    )}
+                  </>
+                );
+              })()}
             </View>
           )}
         </View>
@@ -264,10 +297,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 4,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flex: 1,
+  },
   title: {
     fontWeight: '600',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   menuButton: {
+    margin: 0,
+  },
+  infoIcon: {
     margin: 0,
   },
   divider: {
@@ -276,31 +322,19 @@ const styles = StyleSheet.create({
   content: {
     gap: 4,
   },
-  checkboxRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  infoIcon: {
-    margin: 0,
-  },
-  checkbox: {
-    paddingLeft: 0,
-  },
-  checkboxLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  dateChip: {
-    height: 28,
-  },
   infoRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 4,
+    flexWrap: 'nowrap',
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 8,
+    paddingHorizontal: 4,
   },
   infoChip: {
     height: 28,
+  },
+  chipText: {
+    lineHeight: 18,
+    marginVertical: 0,
   },
 });
