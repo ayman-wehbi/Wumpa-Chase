@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle, View } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming, withSpring } from 'react-native-reanimated';
 
 interface GemIconProps {
   collected: boolean;
@@ -19,6 +20,9 @@ interface GemIconProps {
  * Optional overlayText displayed INSIDE the gem
  * Optional label displayed below the gem
  */
+// Create animated version of MaterialCommunityIcons
+const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
+
 export const GemIcon: React.FC<GemIconProps> = ({
   collected,
   label,
@@ -29,15 +33,34 @@ export const GemIcon: React.FC<GemIconProps> = ({
 }) => {
   const theme = useTheme();
 
+  // Animated values
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(collected ? 1 : 0.35);
+
   const gemColor = collected
     ? theme.colors.primary // Shiny: Crash orange
     : theme.colors.onSurfaceDisabled; // Dull: gray
 
-  const gemOpacity = collected ? 1 : 0.35;
-
   const overlayTextColor = collected
     ? theme.colors.onPrimary // White text on orange gem
     : theme.colors.onSurfaceVariant; // Gray text on dull gem
+
+  // Animate when collected state changes
+  useEffect(() => {
+    opacity.value = withTiming(collected ? 1 : 0.35, { duration: 100 });
+    scale.value = withSpring(collected ? 1.15 : 1, {
+      damping: 50,
+      stiffness: 1000,
+    }, () => {
+      // Bounce back to normal size
+      scale.value = withSpring(1, { damping: 50, stiffness: 3000 });
+    });
+  }, [collected]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
     <TouchableOpacity
@@ -47,15 +70,14 @@ export const GemIcon: React.FC<GemIconProps> = ({
       activeOpacity={0.7}
     >
       <View style={styles.gemContainer}>
-        <View style={styles.iconWrapper}>
-          <MaterialCommunityIcons
+        <Animated.View style={[styles.iconWrapper, animatedStyle]}>
+          <AnimatedIcon
             name="diamond"
             size={size}
             color={gemColor}
             style={[
               styles.gemIcon,
               collected && styles.shinyGem,
-              { opacity: gemOpacity },
             ]}
           />
           {overlayText && (
@@ -71,7 +93,7 @@ export const GemIcon: React.FC<GemIconProps> = ({
               {overlayText}
             </Text>
           )}
-        </View>
+        </Animated.View>
         {label && (
           <Text
             variant="labelSmall"

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, Text, IconButton, useTheme, Divider } from 'react-native-paper';
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { LevelData, GemCheckboxes } from '../../types';
 import { useProgress } from '../../context/ProgressContext';
 import { LevelProgress } from './LevelProgress';
@@ -62,48 +63,53 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
       </Card.Content>
 
       {expanded && (
-        <Card.Content style={styles.expandedContent}>
-          <GemRow
-            mode="Normal Mode"
-            gems={level.progress.normalMode}
-            onGemPress={handleGemToggle('normalMode')}
-          />
+        <Animated.View
+          entering={FadeInDown.duration(300)}
+          layout={LinearTransition.duration(200)}
+        >
+          <Card.Content style={styles.expandedContent}>
+            <GemRow
+              mode="Normal Mode"
+              gems={level.progress.normalMode}
+              onGemPress={handleGemToggle('normalMode')}
+            />
 
-          <Divider style={styles.divider} />
+            <Divider style={styles.divider} />
 
-          <GemRow
-            mode="N.Verted Mode"
-            gems={level.progress.nVertedMode}
-            onGemPress={handleGemToggle('nVertedMode')}
-          />
+            <GemRow
+              mode="N.Verted Mode"
+              gems={level.progress.nVertedMode}
+              onGemPress={handleGemToggle('nVertedMode')}
+            />
 
-          <Divider style={styles.divider} />
+            <Divider style={styles.divider} />
 
-          <PlatinumSection
-            platinum={level.progress.platinumTimeTrial}
-            levelId={level.id}
-            onCompletionChange={updatePlatinumCompletion}
-            onTimeChange={updatePlatinumTime}
-            onAttemptsChange={updatePlatinumAttempts}
-            onDifficultyChange={updatePlatinumDifficulty}
-            onDateChange={updatePlatinumDate}
-            onNoteChange={updatePlatinumNote}
-            onNoteDelete={deletePlatinumNote}
-            onReset={resetPlatinum}
-          />
+            <PlatinumSection
+              platinum={level.progress.platinumTimeTrial}
+              levelId={level.id}
+              onCompletionChange={updatePlatinumCompletion}
+              onTimeChange={updatePlatinumTime}
+              onAttemptsChange={updatePlatinumAttempts}
+              onDifficultyChange={updatePlatinumDifficulty}
+              onDateChange={updatePlatinumDate}
+              onNoteChange={updatePlatinumNote}
+              onNoteDelete={deletePlatinumNote}
+              onReset={resetPlatinum}
+            />
 
-          <NSanelySection
-            nsanely={level.progress.nsanelyPerfectRelic}
-            levelId={level.id}
-            onCompletionChange={updateNSanelyCompletion}
-            onAttemptsChange={updateNSanelyAttempts}
-            onDifficultyChange={updateNSanelyDifficulty}
-            onDateChange={updateNSanelyDate}
-            onNoteChange={updateNSanelyNote}
-            onNoteDelete={deleteNSanelyNote}
-            onReset={resetNSanely}
-          />
-        </Card.Content>
+            <NSanelySection
+              nsanely={level.progress.nsanelyPerfectRelic}
+              levelId={level.id}
+              onCompletionChange={updateNSanelyCompletion}
+              onAttemptsChange={updateNSanelyAttempts}
+              onDifficultyChange={updateNSanelyDifficulty}
+              onDateChange={updateNSanelyDate}
+              onNoteChange={updateNSanelyNote}
+              onNoteDelete={deleteNSanelyNote}
+              onReset={resetNSanely}
+            />
+          </Card.Content>
+        </Animated.View>
       )}
     </Card>
   );

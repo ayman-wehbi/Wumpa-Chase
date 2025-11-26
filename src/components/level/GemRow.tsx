@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { GemCheckboxes } from '../../types';
 import { GemIcon } from '../common/GemIcon';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 interface GemRowProps {
   mode: 'Normal Mode' | 'N.Verted Mode';
@@ -32,8 +33,14 @@ export const GemRow: React.FC<GemRowProps> = ({ mode, gems, onGemPress }) => {
     { key: 'hiddenGem', collected: gems.hiddenGem, label: '💎' },
   ];
 
+  // Stagger appearance: Normal Mode appears first, N.Verted Mode appears second
+  const delay = mode === 'Normal Mode' ? 100 : 200;
+
   return (
-    <View style={styles.container}>
+    <Animated.View
+      style={styles.container}
+      entering={FadeIn.delay(delay).duration(300)}
+    >
       <Text
         variant="titleSmall"
         style={[styles.modeLabel, { color: theme.colors.onSurface }]}
@@ -57,7 +64,7 @@ export const GemRow: React.FC<GemRowProps> = ({ mode, gems, onGemPress }) => {
           />
         ))}
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
