@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
+import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
 import {
   Checkbox,
   Text,
@@ -146,6 +147,19 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  // Calculate badge count and layout
+  const badgeInfo = useMemo(() => {
+    const count = [platinum.difficulty, platinum.time, platinum.completionDate].filter(Boolean).length;
+
+    // For 2 badges, make each badge wider (~45% width)
+    // For 3 badges or 1 badge, use natural width
+    const chipContainerStyle = count === 2
+      ? { minWidth: '45%' as const }
+      : {};
+
+    return { count, chipContainerStyle };
+  }, [platinum.difficulty, platinum.time, platinum.completionDate]);
+
   const handleDateChange = (event: any, selectedDate?: Date) => {
     // On Android, hide picker on any event
     if (Platform.OS === 'android') {
@@ -227,56 +241,68 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
           />
 
           {/* Display current values as info chips */}
-          {(platinum.difficulty || platinum.time || platinum.completionDate) && (
-            <View style={[styles.infoRow, (() => {
-              const badgeCount = [platinum.difficulty, platinum.time, platinum.completionDate].filter(Boolean).length;
-              return badgeCount === 3 ? { gap: 2, paddingHorizontal: 0 } : {};
-            })()]}>
-              {(() => {
-                const badgeCount = [platinum.difficulty, platinum.time, platinum.completionDate].filter(Boolean).length;
-                const chipStyle = badgeCount >= 2
-                  ? [styles.infoChip, { flex: 1, minWidth: 0, maxWidth: (badgeCount === 3 ? '33%' : '50%') as '33%' | '50%' }]
-                  : styles.infoChip;
-
-                return (
-                  <>
-                    {platinum.difficulty && (
-                      <Chip
-                        mode="flat"
-                        icon="gauge"
-                        style={chipStyle}
-                        textStyle={styles.chipText}
-                        compact
-                      >
-                        {badgeCount === 3 ? `Diff: ${platinum.difficulty}` : `Diff: ${platinum.difficulty}`}
-                      </Chip>
-                    )}
-                    {platinum.time && (
-                      <Chip
-                        mode="flat"
-                        icon="timer"
-                        style={chipStyle}
-                        textStyle={styles.chipText}
-                        compact
-                      >
-                        {platinum.time}
-                      </Chip>
-                    )}
-                    {platinum.completionDate && (
-                      <Chip
-                        mode="flat"
-                        icon="calendar-check"
-                        style={chipStyle}
-                        textStyle={styles.chipText}
-                        onPress={() => setShowDatePicker(true)}
-                        compact
-                      >
-                        {formatDate(platinum.completionDate, badgeCount === 3)}
-                      </Chip>
-                    )}
-                  </>
-                );
-              })()}
+          {badgeInfo.count > 0 && (
+            <View style={styles.infoRow}>
+              {platinum.completionDate && (
+                <Animated.View
+                  style={[styles.chipContainer, badgeInfo.chipContainerStyle]}
+                  entering={FadeIn.duration(300)}
+                  exiting={FadeOut.duration(200)}
+                  layout={LinearTransition.springify()}
+                >
+                  <Chip
+                    key="completionDate"
+                    mode="flat"
+                    icon="calendar-check"
+                    style={styles.infoChip}
+                    textStyle={styles.chipText}
+                    onPress={() => setShowDatePicker(true)}
+                    compact
+                  >
+                    {formatDate(platinum.completionDate, badgeInfo.count === 3)}
+                  </Chip>
+                </Animated.View>
+              )}
+              {platinum.difficulty && (
+                <Animated.View
+                  style={[styles.chipContainer, badgeInfo.chipContainerStyle]}
+                  entering={FadeIn.duration(300)}
+                  exiting={FadeOut.duration(200)}
+                  layout={LinearTransition.springify()}
+                >
+                  <Chip
+                    key="difficulty"
+                    mode="flat"
+                    icon="gauge"
+                    style={styles.infoChip}
+                    textStyle={styles.chipText}
+                    onPress={() => setShowDifficultyModal(true)}
+                    compact
+                  >
+                    {badgeInfo.count === 3 ? `${platinum.difficulty}/10` : badgeInfo.count === 2 ? `Diff: ${platinum.difficulty}/10` : `Difficulty: ${platinum.difficulty}/10`}
+                  </Chip>
+                </Animated.View>
+              )}
+              {platinum.time && (
+                <Animated.View
+                  style={[styles.chipContainer, badgeInfo.chipContainerStyle]}
+                  entering={FadeIn.duration(300)}
+                  exiting={FadeOut.duration(200)}
+                  layout={LinearTransition.springify()}
+                >
+                  <Chip
+                    key="time"
+                    mode="flat"
+                    icon="timer"
+                    style={styles.infoChip}
+                    textStyle={styles.chipText}
+                    onPress={() => setShowTimeModal(true)}
+                    compact
+                  >
+                    {platinum.time}
+                  </Chip>
+                </Animated.View>
+              )}
             </View>
           )}
         </View>
@@ -443,14 +469,21 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     flexDirection: 'row',
-    flexWrap: 'nowrap',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
+    paddingHorizontal: 8,
+    flexWrap: 'nowrap',
     marginTop: 12,
     marginBottom: 8,
-    paddingHorizontal: 4,
   },
   infoChip: {
     height: 28,
+  },
+  chipContainer: {
+    flex: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chipText: {
     lineHeight: 18,

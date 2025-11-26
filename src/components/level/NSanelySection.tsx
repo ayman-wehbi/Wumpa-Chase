@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
+import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
 import {
   Checkbox,
   Text,
@@ -96,6 +97,19 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  // Calculate badge count and layout
+  const badgeInfo = useMemo(() => {
+    const count = [nsanely.difficulty, nsanely.completionDate].filter(Boolean).length;
+
+    // For 2 badges, make each badge wider (~45% width)
+    // For 1 badge, use natural width
+    const chipContainerStyle = count === 2
+      ? { minWidth: '45%' as const }
+      : {};
+
+    return { count, chipContainerStyle };
+  }, [nsanely.difficulty, nsanely.completionDate]);
+
   const handleDateChange = (event: any, selectedDate?: Date) => {
     // On Android, hide picker on any event
     if (Platform.OS === 'android') {
@@ -176,45 +190,48 @@ export const NSanelySection: React.FC<NSanelySectionProps> = ({
           />
 
           {/* Display current difficulty and date as info chips */}
-          {(nsanely.difficulty || nsanely.completionDate) && (
-            <View style={[styles.infoRow, (() => {
-              const badgeCount = [nsanely.difficulty, nsanely.completionDate].filter(Boolean).length;
-              return badgeCount === 2 ? { gap: 2, paddingHorizontal: 0 } : {};
-            })()]}>
-              {(() => {
-                const badgeCount = [nsanely.difficulty, nsanely.completionDate].filter(Boolean).length;
-                const chipStyle = badgeCount >= 2
-                  ? [styles.infoChip, { flex: 1, minWidth: 0, maxWidth: '50%' as '50%' }]
-                  : styles.infoChip;
-
-                return (
-                  <>
-                    {nsanely.difficulty && (
-                      <Chip
-                        mode="flat"
-                        icon="gauge"
-                        style={chipStyle}
-                        textStyle={styles.chipText}
-                        compact
-                      >
-                        {badgeCount === 2 ? `D${nsanely.difficulty}` : `Diff: ${nsanely.difficulty}`}
-                      </Chip>
-                    )}
-                    {nsanely.completionDate && (
-                      <Chip
-                        mode="flat"
-                        icon="calendar-check"
-                        style={chipStyle}
-                        textStyle={styles.chipText}
-                        onPress={() => setShowDatePicker(true)}
-                        compact
-                      >
-                        {formatDate(nsanely.completionDate, badgeCount === 2)}
-                      </Chip>
-                    )}
-                  </>
-                );
-              })()}
+          {badgeInfo.count > 0 && (
+            <View style={styles.infoRow}>
+              {nsanely.completionDate && (
+                <Animated.View
+                  style={[styles.chipContainer, badgeInfo.chipContainerStyle]}
+                  entering={FadeIn.duration(300)}
+                  exiting={FadeOut.duration(200)}
+                  layout={LinearTransition.springify()}
+                >
+                  <Chip
+                    key="completionDate"
+                    mode="flat"
+                    icon="calendar-check"
+                    style={styles.infoChip}
+                    textStyle={styles.chipText}
+                    onPress={() => setShowDatePicker(true)}
+                    compact
+                  >
+                    {formatDate(nsanely.completionDate, badgeInfo.count === 2)}
+                  </Chip>
+                </Animated.View>
+              )}
+              {nsanely.difficulty && (
+                <Animated.View
+                  style={[styles.chipContainer, badgeInfo.chipContainerStyle]}
+                  entering={FadeIn.duration(300)}
+                  exiting={FadeOut.duration(200)}
+                  layout={LinearTransition.springify()}
+                >
+                  <Chip
+                    key="difficulty"
+                    mode="flat"
+                    icon="gauge"
+                    style={styles.infoChip}
+                    textStyle={styles.chipText}
+                    onPress={() => setShowDifficultyModal(true)}
+                    compact
+                  >
+                    {badgeInfo.count === 2 ? `Diff: ${nsanely.difficulty}/10` : `Difficulty: ${nsanely.difficulty}/10`}
+                  </Chip>
+                </Animated.View>
+              )}
             </View>
           )}
         </View>
@@ -324,14 +341,21 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     flexDirection: 'row',
-    flexWrap: 'nowrap',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
+    paddingHorizontal: 8,
+    flexWrap: 'nowrap',
     marginTop: 12,
     marginBottom: 8,
-    paddingHorizontal: 4,
   },
   infoChip: {
     height: 28,
+  },
+  chipContainer: {
+    flex: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chipText: {
     lineHeight: 18,
