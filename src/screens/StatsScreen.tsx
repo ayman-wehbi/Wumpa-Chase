@@ -155,16 +155,27 @@ export const StatsScreen: React.FC = () => {
   const timeTrialStats = useMemo(() => {
     const parseTime = (timeStr: string): number => {
       // Parse MM:SS.mmm format to milliseconds
+      if (!timeStr || typeof timeStr !== 'string') return Infinity;
+
       const parts = timeStr.split(':');
       if (parts.length !== 2) return Infinity;
+
       const minutes = parseInt(parts[0]);
       const secondsParts = parts[1].split('.');
       const seconds = parseInt(secondsParts[0]);
       const milliseconds = parseInt(secondsParts[1] || '0');
+
+      // Validate parsed values
+      if (isNaN(minutes) || isNaN(seconds) || isNaN(milliseconds)) return Infinity;
+      if (minutes < 0 || seconds < 0 || seconds >= 60 || milliseconds < 0 || milliseconds >= 1000) {
+        return Infinity;
+      }
+
       return minutes * 60000 + seconds * 1000 + milliseconds;
     };
 
     const formatTime = (ms: number): string => {
+      if (!isFinite(ms) || ms < 0) return 'N/A';
       const minutes = Math.floor(ms / 60000);
       const seconds = Math.floor((ms % 60000) / 1000);
       const millis = ms % 1000;
@@ -195,19 +206,23 @@ export const StatsScreen: React.FC = () => {
   // Achievement/Milestone Statistics
   const achievementStats = useMemo(() => {
     const firstTryPlatinum = levels
-      .filter(l => l.progress.platinumTimeTrial.completed && l.progress.platinumTimeTrial.attempts === 0)
+      .filter(l => l.progress.platinumTimeTrial.completed && l.progress.platinumTimeTrial.attempts === 1)
       .map(l => l.name);
 
     const firstTryNsanely = levels
-      .filter(l => l.progress.nsanelyPerfectRelic.completed && l.progress.nsanelyPerfectRelic.attempts === 0)
+      .filter(l => l.progress.nsanelyPerfectRelic.completed && l.progress.nsanelyPerfectRelic.attempts === 1)
       .map(l => l.name);
 
-    const allCompleted = levels.filter(l => l.progress.platinumTimeTrial.completed || l.progress.nsanelyPerfectRelic.completed);
-    const mostPersistent = allCompleted.length > 0
-      ? allCompleted.reduce((max, l) => {
-          const total = l.progress.platinumTimeTrial.attempts + l.progress.nsanelyPerfectRelic.attempts;
-          return total > (max.attempts || 0) ? { name: l.name, attempts: total } : max;
-        }, { name: '', attempts: 0 })
+    const levelsWithAttempts = levels
+      .filter(l => l.progress.platinumTimeTrial.completed || l.progress.nsanelyPerfectRelic.completed)
+      .map(l => ({
+        name: l.name,
+        attempts: l.progress.platinumTimeTrial.attempts + l.progress.nsanelyPerfectRelic.attempts
+      }))
+      .filter(l => l.attempts > 0);
+
+    const mostPersistent = levelsWithAttempts.length > 0
+      ? levelsWithAttempts.reduce((max, l) => l.attempts > max.attempts ? l : max)
       : null;
 
     const perfectLevels = levels.filter(l => {
@@ -225,6 +240,59 @@ export const StatsScreen: React.FC = () => {
       mostPersistent,
       perfectLevels,
       perfectCount: perfectLevels.length,
+    };
+  }, [levels]);
+
+  // Gap Analysis - What's Remaining
+  const gapAnalysis = useMemo(() => {
+    // Levels with no progress at all
+    const untouchedLevels = levels.filter(l => {
+      const normalGems = Object.values(l.progress.normalMode).filter(Boolean).length;
+      const nvertedGems = Object.values(l.progress.nVertedMode).filter(Boolean).length;
+      return normalGems === 0 && nvertedGems === 0 &&
+             !l.progress.platinumTimeTrial.completed &&
+             !l.progress.nsanelyPerfectRelic.completed;
+    });
+
+    // Levels with partial gem completion (at least 1 gem, but not all 12)
+    const partialGemLevels = levels.filter(l => {
+      const normalGems = Object.values(l.progress.normalMode).filter(Boolean).length;
+      const nvertedGems = Object.values(l.progress.nVertedMode).filter(Boolean).length;
+      const totalGems = normalGems + nvertedGems;
+      return totalGems > 0 && totalGems < 12;
+    });
+
+    // Levels missing platinum
+    const missingPlatinum = levels.filter(l => !l.progress.platinumTimeTrial.completed);
+
+    // Levels missing N.Sanely
+    const missingNsanely = levels.filter(l => !l.progress.nsanelyPerfectRelic.completed);
+
+    // Easiest remaining platinum challenges (by difficulty rating)
+    const easiestRemainingPlatinum = missingPlatinum
+      .filter(l => l.progress.platinumTimeTrial.difficulty && l.progress.platinumTimeTrial.difficulty > 0)
+      .sort((a, b) => (a.progress.platinumTimeTrial.difficulty || 10) - (b.progress.platinumTimeTrial.difficulty || 10))
+      .slice(0, 5);
+
+    // Easiest remaining N.Sanely challenges (by difficulty rating)
+    const easiestRemainingNsanely = missingNsanely
+      .filter(l => l.progress.nsanelyPerfectRelic.difficulty && l.progress.nsanelyPerfectRelic.difficulty > 0)
+      .sort((a, b) => (a.progress.nsanelyPerfectRelic.difficulty || 10) - (b.progress.nsanelyPerfectRelic.difficulty || 10))
+      .slice(0, 5);
+
+    return {
+      untouchedLevels: untouchedLevels.map(l => l.name),
+      untouchedCount: untouchedLevels.length,
+      partialGemLevels: partialGemLevels.map(l => ({
+        name: l.name,
+        gemsCollected: Object.values(l.progress.normalMode).filter(Boolean).length +
+                       Object.values(l.progress.nVertedMode).filter(Boolean).length
+      })),
+      partialGemCount: partialGemLevels.length,
+      missingPlatinumCount: missingPlatinum.length,
+      missingNsanelyCount: missingNsanely.length,
+      easiestRemainingPlatinum,
+      easiestRemainingNsanely,
     };
   }, [levels]);
 
@@ -305,17 +373,34 @@ export const StatsScreen: React.FC = () => {
     const mostRecentCompletion = allCompletions[allCompletions.length - 1];
 
     // Calculate longest streak
+    // Helper function to normalize dates (date only, no time)
+    const getDateOnly = (date: Date): Date => {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    };
+
+    // Get unique dates as normalized date objects, then sort
+    const uniqueDateStrings = [...new Set(allCompletions.map(c =>
+      getDateOnly(c.date).toISOString()
+    ))].sort();
+
     let longestStreak = 0;
     let currentStreak = 0;
-    const uniqueDates = [...new Set(allCompletions.map(c => c.date.toDateString()))];
 
-    for (let i = 0; i < uniqueDates.length; i++) {
-      if (i === 0 || new Date(uniqueDates[i]).getTime() - new Date(uniqueDates[i - 1]).getTime() <= 86400000) {
-        currentStreak++;
-        longestStreak = Math.max(longestStreak, currentStreak);
-      } else {
+    for (let i = 0; i < uniqueDateStrings.length; i++) {
+      if (i === 0) {
         currentStreak = 1;
+      } else {
+        const prevDate = new Date(uniqueDateStrings[i - 1]);
+        const currDate = new Date(uniqueDateStrings[i]);
+        const dayDiff = Math.floor((currDate.getTime() - prevDate.getTime()) / 86400000);
+
+        if (dayDiff === 1) {
+          currentStreak++;
+        } else {
+          currentStreak = 1;
+        }
       }
+      longestStreak = Math.max(longestStreak, currentStreak);
     }
 
     // Find most productive day
@@ -337,7 +422,7 @@ export const StatsScreen: React.FC = () => {
         date: mostProductiveDay[0],
         count: mostProductiveDay[1]
       } : null,
-      totalCompletionDays: uniqueDates.length,
+      totalCompletionDays: uniqueDateStrings.length,
     };
   }, [levels]);
 
@@ -780,6 +865,124 @@ export const StatsScreen: React.FC = () => {
             </Card>
           </Animated.View>
         )}
+
+        {/* Gap Analysis - What's Remaining */}
+        <Animated.View entering={FadeInDown.delay(1200).duration(300)} layout={LinearTransition.duration(200)}>
+          <Card style={styles.card} mode="elevated">
+            <Card.Content>
+              <Text variant="titleLarge" style={styles.cardTitle}>
+                What's Remaining
+              </Text>
+
+              <View style={styles.achievementRow}>
+                <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
+                  Missing Completions
+                </Text>
+              </View>
+
+              <View style={styles.levelStatRow}>
+                <Text variant="bodyMedium">Platinum Time Trials</Text>
+                <Text variant="bodyMedium" style={{ color: theme.colors.secondary, fontWeight: 'bold' }}>
+                  {gapAnalysis.missingPlatinumCount} remaining
+                </Text>
+              </View>
+
+              <View style={styles.levelStatRow}>
+                <Text variant="bodyMedium">N.Sanely Perfect Relics</Text>
+                <Text variant="bodyMedium" style={{ color: theme.colors.tertiary, fontWeight: 'bold' }}>
+                  {gapAnalysis.missingNsanelyCount} remaining
+                </Text>
+              </View>
+
+              {gapAnalysis.untouchedCount > 0 && (
+                <>
+                  <View style={styles.achievementRow}>
+                    <Text variant="titleMedium" style={{ color: theme.colors.error, marginTop: 12 }}>
+                      Untouched Levels: {gapAnalysis.untouchedCount}
+                    </Text>
+                  </View>
+                  {gapAnalysis.untouchedLevels.slice(0, 5).map((levelName, index) => (
+                    <View key={levelName} style={styles.levelStatRow}>
+                      <Text variant="bodySmall" style={{ color: theme.colors.outline }}>
+                        {index + 1}. {levelName}
+                      </Text>
+                    </View>
+                  ))}
+                  {gapAnalysis.untouchedCount > 5 && (
+                    <Text variant="bodySmall" style={{ color: theme.colors.outline, marginTop: 4 }}>
+                      ... and {gapAnalysis.untouchedCount - 5} more
+                    </Text>
+                  )}
+                </>
+              )}
+
+              {gapAnalysis.partialGemCount > 0 && (
+                <>
+                  <View style={styles.achievementRow}>
+                    <Text variant="titleMedium" style={{ marginTop: 12 }}>
+                      Partial Gem Collection: {gapAnalysis.partialGemCount}
+                    </Text>
+                  </View>
+                  {gapAnalysis.partialGemLevels.slice(0, 5).map((level, index) => (
+                    <View key={level.name} style={styles.levelStatRow}>
+                      <Text variant="bodySmall" style={{ flex: 1 }}>
+                        {index + 1}. {level.name}
+                      </Text>
+                      <Text variant="bodySmall" style={{ color: theme.colors.outline }}>
+                        {level.gemsCollected}/12 gems
+                      </Text>
+                    </View>
+                  ))}
+                  {gapAnalysis.partialGemCount > 5 && (
+                    <Text variant="bodySmall" style={{ color: theme.colors.outline, marginTop: 4 }}>
+                      ... and {gapAnalysis.partialGemCount - 5} more
+                    </Text>
+                  )}
+                </>
+              )}
+
+              {gapAnalysis.easiestRemainingPlatinum.length > 0 && (
+                <>
+                  <View style={styles.achievementRow}>
+                    <Text variant="titleMedium" style={{ marginTop: 12 }}>
+                      Easiest Remaining Platinum
+                    </Text>
+                  </View>
+                  {gapAnalysis.easiestRemainingPlatinum.map((level, index) => (
+                    <View key={level.name} style={styles.levelStatRow}>
+                      <Text variant="bodySmall" style={{ flex: 1 }}>
+                        {index + 1}. {level.name}
+                      </Text>
+                      <Text variant="bodySmall" style={{ color: theme.colors.secondary }}>
+                        {level.progress.platinumTimeTrial.difficulty}/10
+                      </Text>
+                    </View>
+                  ))}
+                </>
+              )}
+
+              {gapAnalysis.easiestRemainingNsanely.length > 0 && (
+                <>
+                  <View style={styles.achievementRow}>
+                    <Text variant="titleMedium" style={{ marginTop: 12 }}>
+                      Easiest Remaining N.Sanely
+                    </Text>
+                  </View>
+                  {gapAnalysis.easiestRemainingNsanely.map((level, index) => (
+                    <View key={level.name} style={styles.levelStatRow}>
+                      <Text variant="bodySmall" style={{ flex: 1 }}>
+                        {index + 1}. {level.name}
+                      </Text>
+                      <Text variant="bodySmall" style={{ color: theme.colors.tertiary }}>
+                        {level.progress.nsanelyPerfectRelic.difficulty}/10
+                      </Text>
+                    </View>
+                  ))}
+                </>
+              )}
+            </Card.Content>
+          </Card>
+        </Animated.View>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
