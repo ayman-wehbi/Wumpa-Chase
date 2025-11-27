@@ -47,8 +47,6 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
       <Card.Title
         title={level.name}
         titleVariant="titleMedium"
-        subtitle={level.dimension}
-        subtitleVariant="bodySmall"
         right={props => (
           <IconButton
             {...props}
