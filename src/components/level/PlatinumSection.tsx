@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import Animated, { LinearTransition, FadeIn, FadeOut } from 'react-native-reanimated';
 import {
@@ -60,6 +60,11 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
   const [minutes, setMinutes] = useState('');
   const [seconds, setSeconds] = useState('');
   const [milliseconds, setMilliseconds] = useState('');
+
+  // Refs for auto-advance between time input fields
+  const minutesRef = useRef<any>(null);
+  const secondsRef = useRef<any>(null);
+  const millisecondsRef = useRef<any>(null);
 
   const openMenu = () => {
     setMenuVisible(true);
@@ -327,10 +332,17 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
             <View style={styles.timeInputContainer}>
               <View style={styles.inputGroup}>
                 <TextInput
+                  ref={minutesRef}
                   mode="outlined"
                   label="Min"
                   value={minutes}
-                  onChangeText={(text) => setMinutes(text.replace(/[^0-9]/g, '').slice(0, 2))}
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, '').slice(0, 2);
+                    setMinutes(cleaned);
+                    if (cleaned.length === 2) {
+                      secondsRef.current?.focus();
+                    }
+                  }}
                   keyboardType="number-pad"
                   dense
                   style={styles.timeInput}
@@ -340,10 +352,24 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
               </View>
               <View style={styles.inputGroup}>
                 <TextInput
+                  ref={secondsRef}
                   mode="outlined"
                   label="Sec"
                   value={seconds}
-                  onChangeText={(text) => setSeconds(text.replace(/[^0-9]/g, '').slice(0, 2))}
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, '').slice(0, 2);
+                    const numValue = parseInt(cleaned, 10);
+
+                    // Validate: seconds cannot exceed 59
+                    if (!isNaN(numValue) && numValue > 59) {
+                      return; // Don't update if value exceeds 59
+                    }
+
+                    setSeconds(cleaned);
+                    if (cleaned.length === 2) {
+                      millisecondsRef.current?.focus();
+                    }
+                  }}
                   keyboardType="number-pad"
                   dense
                   style={styles.timeInput}
@@ -353,6 +379,7 @@ export const PlatinumSection: React.FC<PlatinumSectionProps> = ({
               </View>
               <View style={styles.inputGroup}>
                 <TextInput
+                  ref={millisecondsRef}
                   mode="outlined"
                   label="Ms"
                   value={milliseconds}
