@@ -1,6 +1,6 @@
 {
-  "name": "CrashTracker",
-  "version": "0.0.1",
+  "name": "Wumpa Platter",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
