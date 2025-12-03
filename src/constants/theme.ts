@@ -2,102 +2,168 @@ import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 
 /**
  * Material Design 3 Light Theme
- * Crash Bandicoot inspired color scheme (orange/purple)
+ * Crash Bandicoot playful theme with Material You foundation
+ *
+ * Color Palette:
+ * - Primary: Medium Blue (#2055A9)
+ * - Secondary: Crash Orange/Red (#A12300)
+ * - Tertiary: Dark Teal (#003333)
+ * - Background: Light Cyan (#E6FFFF)
  */
 export const lightTheme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: 'rgb(255, 111, 0)', // Crash Bandicoot orange
-    onPrimary: 'rgb(255, 255, 255)',
-    primaryContainer: 'rgb(255, 219, 200)',
-    onPrimaryContainer: 'rgb(51, 22, 0)',
-    secondary: 'rgb(120, 69, 172)', // Purple for secondary actions
-    onSecondary: 'rgb(255, 255, 255)',
-    secondaryContainer: 'rgb(239, 221, 255)',
-    onSecondaryContainer: 'rgb(44, 0, 81)',
-    tertiary: 'rgb(0, 105, 92)',
-    onTertiary: 'rgb(255, 255, 255)',
-    tertiaryContainer: 'rgb(151, 248, 228)',
-    onTertiaryContainer: 'rgb(0, 32, 27)',
+    // Primary - Medium Blue (main brand color)
+    primary: '#2055A9',
+    onPrimary: '#FFFFFF',
+    primaryContainer: '#D4E1F7',  // Very light blue container
+    onPrimaryContainer: '#101E41',  // Dark navy text
+
+    // Secondary - Crash Orange/Red (accent actions)
+    secondary: '#A12300',
+    onSecondary: '#FFFFFF',
+    secondaryContainer: '#FFD7CC',  // Peachy light orange
+    onSecondaryContainer: '#330033',  // Dark purple text
+
+    // Tertiary - Dark Teal (success/complete states)
+    tertiary: '#003333',
+    onTertiary: '#E6FFFF',
+    tertiaryContainer: '#D6DFF5',  // Light periwinkle
+    onTertiaryContainer: '#101E41',
+
+    // Error (keep Material default)
     error: 'rgb(186, 26, 26)',
     onError: 'rgb(255, 255, 255)',
     errorContainer: 'rgb(255, 218, 214)',
     onErrorContainer: 'rgb(65, 0, 2)',
-    background: 'rgb(255, 251, 255)',
-    onBackground: 'rgb(29, 27, 30)',
-    surface: 'rgb(255, 251, 255)',
-    onSurface: 'rgb(29, 27, 30)',
-    surfaceVariant: 'rgb(242, 221, 210)',
-    onSurfaceVariant: 'rgb(82, 67, 60)',
-    outline: 'rgb(132, 115, 107)',
-    outlineVariant: 'rgb(213, 194, 182)',
+
+    // Backgrounds - Very light cyan
+    background: '#E6FFFF',
+    onBackground: '#101E41',
+
+    // Surface - Pure white
+    surface: '#FFFFFF',
+    onSurface: '#101E41',
+    surfaceVariant: '#D6DFF5',  // Light periwinkle variant
+    onSurfaceVariant: '#101E41',
+
+    // Outline
+    outline: '#2055A9',  // Use primary for outlines
+    outlineVariant: '#D4E1F7',
+
+    // Shadow & Scrim
     shadow: 'rgb(0, 0, 0)',
     scrim: 'rgb(0, 0, 0)',
-    inverseSurface: 'rgb(51, 47, 50)',
-    inverseOnSurface: 'rgb(246, 239, 242)',
-    inversePrimary: 'rgb(255, 183, 134)',
+
+    // Inverse
+    inverseSurface: '#101E41',
+    inverseOnSurface: '#E6FFFF',
+    inversePrimary: '#D4E1F7',
+
+    // Elevation levels - tinted with primary
     elevation: {
       level0: 'transparent',
-      level1: 'rgb(250, 242, 247)',
-      level2: 'rgb(247, 236, 242)',
-      level3: 'rgb(244, 230, 237)',
-      level4: 'rgb(243, 228, 235)',
-      level5: 'rgb(240, 224, 231)',
+      level1: '#FAFCFE',  // Very subtle blue tint
+      level2: '#F5F8FC',
+      level3: '#F0F5FA',
+      level4: '#EDF3F9',
+      level5: '#E8F1F8',
     },
-    surfaceDisabled: 'rgba(29, 27, 30, 0.12)',
-    onSurfaceDisabled: 'rgba(29, 27, 30, 0.38)',
-    backdrop: 'rgba(58, 45, 38, 0.4)',
-  },
+
+    // State layers
+    surfaceDisabled: 'rgba(16, 30, 65, 0.12)',
+    onSurfaceDisabled: 'rgba(16, 30, 65, 0.38)',
+    backdrop: 'rgba(16, 30, 65, 0.4)',
+
+    // Custom Crash Bandicoot colors
+    wumpaOrange: '#FFD7CC',
+    crashRed: '#A12300',
+    akuAkuPurple: '#330033',
+    completeTeal: '#003333',
+  } as any,
 };
 
 /**
  * Material Design 3 Dark Theme
- * Crash Bandicoot inspired color scheme (orange/purple)
+ * Crash Bandicoot playful theme with Material You foundation
+ *
+ * Color Palette (Inverted):
+ * - Primary: Light Blue (#D4E1F7)
+ * - Secondary: Peachy Orange (#FFD7CC)
+ * - Tertiary: Light Periwinkle (#D6DFF5)
+ * - Background: Dark Navy (#101E41)
  */
 export const darkTheme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: 'rgb(255, 183, 134)',
-    onPrimary: 'rgb(87, 37, 0)',
-    primaryContainer: 'rgb(122, 54, 0)',
-    onPrimaryContainer: 'rgb(255, 219, 200)',
-    secondary: 'rgb(220, 184, 255)',
-    onSecondary: 'rgb(71, 12, 122)',
-    secondaryContainer: 'rgb(95, 43, 146)',
-    onSecondaryContainer: 'rgb(239, 221, 255)',
-    tertiary: 'rgb(121, 219, 200)',
-    onTertiary: 'rgb(0, 54, 47)',
-    tertiaryContainer: 'rgb(0, 79, 69)',
-    onTertiaryContainer: 'rgb(151, 248, 228)',
+    // Primary - Light Blue (inverted for dark mode)
+    primary: '#D4E1F7',
+    onPrimary: '#101E41',
+    primaryContainer: '#2055A9',  // Medium blue container
+    onPrimaryContainer: '#E6FFFF',  // Cyan text
+
+    // Secondary - Peachy Orange (inverted)
+    secondary: '#FFD7CC',
+    onSecondary: '#330033',  // Dark purple
+    secondaryContainer: '#A12300',  // Crash red container
+    onSecondaryContainer: '#FFD6FF',  // Light pink text
+
+    // Tertiary - Light Periwinkle
+    tertiary: '#D6DFF5',
+    onTertiary: '#003333',  // Dark teal
+    tertiaryContainer: '#003333',  // Dark teal container
+    onTertiaryContainer: '#E6FFFF',  // Cyan text
+
+    // Error (Material default dark)
     error: 'rgb(255, 180, 171)',
     onError: 'rgb(105, 0, 5)',
     errorContainer: 'rgb(147, 0, 10)',
     onErrorContainer: 'rgb(255, 180, 171)',
-    background: 'rgb(29, 27, 30)',
-    onBackground: 'rgb(231, 225, 228)',
-    surface: 'rgb(29, 27, 30)',
-    onSurface: 'rgb(231, 225, 228)',
-    surfaceVariant: 'rgb(82, 67, 60)',
-    onSurfaceVariant: 'rgb(213, 194, 182)',
-    outline: 'rgb(158, 140, 132)',
-    outlineVariant: 'rgb(82, 67, 60)',
+
+    // Backgrounds - Dark navy
+    background: '#101E41',
+    onBackground: '#D6DFF5',  // Light blue text
+
+    // Surface - Slightly lighter navy
+    surface: '#1A2B52',
+    onSurface: '#E6FFFF',  // Cyan text
+    surfaceVariant: '#2C3E5F',  // Medium navy variant
+    onSurfaceVariant: '#D6DFF5',
+
+    // Outline
+    outline: '#D4E1F7',  // Light blue for dark mode
+    outlineVariant: '#2055A9',
+
+    // Shadow & Scrim
     shadow: 'rgb(0, 0, 0)',
     scrim: 'rgb(0, 0, 0)',
-    inverseSurface: 'rgb(231, 225, 228)',
-    inverseOnSurface: 'rgb(51, 47, 50)',
-    inversePrimary: 'rgb(157, 68, 0)',
+
+    // Inverse
+    inverseSurface: '#E6FFFF',
+    inverseOnSurface: '#101E41',
+    inversePrimary: '#2055A9',
+
+    // Elevation levels - tinted with primary (lighter blues)
     elevation: {
       level0: 'transparent',
-      level1: 'rgb(39, 35, 41)',
-      level2: 'rgb(45, 40, 48)',
-      level3: 'rgb(51, 44, 54)',
-      level4: 'rgb(53, 46, 56)',
-      level5: 'rgb(57, 49, 61)',
+      level1: '#1E2F55',  // Subtle lighter navy
+      level2: '#223458',
+      level3: '#26395C',
+      level4: '#283C5F',
+      level5: '#2C4163',
     },
-    surfaceDisabled: 'rgba(231, 225, 228, 0.12)',
-    onSurfaceDisabled: 'rgba(231, 225, 228, 0.38)',
-    backdrop: 'rgba(58, 45, 38, 0.4)',
-  },
+
+    // State layers
+    surfaceDisabled: 'rgba(214, 223, 245, 0.12)',
+    onSurfaceDisabled: 'rgba(214, 223, 245, 0.38)',
+    backdrop: 'rgba(16, 30, 65, 0.6)',
+
+    // Custom Crash Bandicoot colors (adjusted for dark mode)
+    wumpaOrange: '#FFD7CC',
+    crashRed: '#FF6347',  // Brighter for visibility
+    akuAkuPurple: '#9370DB',  // Lighter purple for dark mode
+    completeTeal: '#20B2AA',  // Lighter teal for dark mode
+  } as any,
 };
