@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ProgressBar, Text, useTheme } from 'react-native-paper';
 import { LevelProgress as LevelProgressType } from '../../types';
+import { WumpaIcon } from '../common/WumpaIcon';
 
 interface LevelProgressProps {
   progress: LevelProgressType;
@@ -55,12 +56,15 @@ export const LevelProgress: React.FC<LevelProgressProps> = ({ progress }) => {
         <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
           Completion
         </Text>
-        <Text
-          variant="labelMedium"
-          style={[styles.percentage, { color: getProgressColor() }]}
-        >
-          {percentage}%
-        </Text>
+        <View style={styles.percentageContainer}>
+          <WumpaIcon size={16} />
+          <Text
+            variant="labelMedium"
+            style={[styles.percentage, { color: getProgressColor() }]}
+          >
+            {percentage}%
+          </Text>
+        </View>
       </View>
       <ProgressBar
         progress={progressValue}
@@ -79,13 +83,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
+  },
+  percentageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   percentage: {
     fontWeight: '700',
   },
   progressBar: {
-    height: 8,
-    borderRadius: 4,
+    height: 12,
+    borderRadius: 6,
   },
 });

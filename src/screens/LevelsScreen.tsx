@@ -1,9 +1,10 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Text, ActivityIndicator, useTheme } from 'react-native-paper';
+import { Appbar, Text, ActivityIndicator, useTheme, Surface } from 'react-native-paper';
 import { useProgress } from '../context/ProgressContext';
 import { LevelCard } from '../components/level/LevelCard';
 import { DIMENSIONS, getLevelsByDimension } from '../data/levels';
+import { MD3_TEXT_VARIANTS } from '../constants/typography';
 
 export const LevelsScreen: React.FC = () => {
   const theme = useTheme();
@@ -23,7 +24,7 @@ export const LevelsScreen: React.FC = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header elevated>
-        <Appbar.Content title="Crash Bandicoot 4" />
+        <Appbar.Content title="Wumpa Platter" />
       </Appbar.Header>
 
       <ScrollView
@@ -36,31 +37,53 @@ export const LevelsScreen: React.FC = () => {
 
           return (
             <View key={dimension} style={styles.dimensionSection}>
-              <View
+              {/* Dimension header with Material Surface and subtle gradient */}
+              <Surface
+                elevation={2}
                 style={[
-                  styles.dimensionHeader,
-                  { backgroundColor: theme.colors.primaryContainer },
+                  styles.dimensionHeaderContainer,
+                  { backgroundColor: theme.colors.surface }
                 ]}
               >
-                <Text
-                  variant="titleMedium"
+                {/* Subtle gradient overlay using user's blue colors */}
+                <View style={[StyleSheet.absoluteFill, styles.gradientBase]} />
+                <View
                   style={[
-                    styles.dimensionTitle,
-                    { color: theme.colors.onPrimaryContainer },
+                    StyleSheet.absoluteFill,
+                    styles.gradientTop,
+                    { backgroundColor: theme.colors.primaryContainer, opacity: 0.3 }
                   ]}
-                >
-                  {dimension}
-                </Text>
-                <Text
-                  variant="labelMedium"
+                />
+                <View
                   style={[
-                    styles.dimensionCount,
-                    { color: theme.colors.onPrimaryContainer },
+                    StyleSheet.absoluteFill,
+                    styles.gradientOverlay,
+                    { backgroundColor: theme.colors.background, opacity: 0.15 }
                   ]}
-                >
-                  {dimensionLevels.length} levels
-                </Text>
-              </View>
+                />
+
+                {/* Content */}
+                <View style={styles.dimensionHeader}>
+                  <Text
+                    variant="headlineSmall"
+                    style={[
+                      MD3_TEXT_VARIANTS.headlineSmall,
+                      { color: theme.colors.primary }
+                    ]}
+                  >
+                    {dimension}
+                  </Text>
+                  <Text
+                    variant="labelMedium"
+                    style={[
+                      styles.dimensionCount,
+                      { color: theme.colors.onSurfaceVariant }
+                    ]}
+                  >
+                    {dimensionLevels.length} levels
+                  </Text>
+                </View>
+              </Surface>
 
               {dimensionLevels.map(level => (
                 <LevelCard key={level.id} level={level} />
@@ -96,18 +119,28 @@ const styles = StyleSheet.create({
   dimensionSection: {
     marginBottom: 16,
   },
+  dimensionHeaderContainer: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  gradientBase: {
+    // Base layer for gradient
+  },
+  gradientTop: {
+    // Top gradient layer (primaryContainer)
+  },
+  gradientOverlay: {
+    // Subtle overlay layer (background)
+  },
   dimensionHeader: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginBottom: 4,
-    borderRadius: 8,
+    paddingVertical: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  dimensionTitle: {
-    fontWeight: '700',
+    zIndex: 1,
   },
   dimensionCount: {
     opacity: 0.8,
