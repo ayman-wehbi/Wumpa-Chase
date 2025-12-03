@@ -17,6 +17,7 @@ import Animated, {
 import { useProgress } from '../context/ProgressContext';
 import { DIMENSIONS, getLevelsByDimension } from '../data/levels';
 import { CompletionStats, DimensionStats } from '../types';
+import { MD3_TEXT_VARIANTS } from '../constants/typography';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -587,7 +588,14 @@ export const StatsScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.duration(300)} layout={LinearTransition.duration(200)}>
           <Card style={styles.card} mode="elevated">
             <Card.Content>
-              <Text variant="headlineSmall" style={styles.cardTitle}>
+              <Text
+                variant="headlineSmall"
+                style={[
+                  MD3_TEXT_VARIANTS.headlineSmall,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
                 Overall Completion
               </Text>
               <View style={styles.statRow}>
@@ -607,7 +615,14 @@ export const StatsScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.delay(100).duration(300)} layout={LinearTransition.duration(200)}>
           <Card style={styles.card} mode="elevated">
             <Card.Content>
-              <Text variant="titleLarge" style={styles.cardTitle}>
+              <Text
+                variant="titleLarge"
+                style={[
+                  MD3_TEXT_VARIANTS.titleLarge,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
                 Gem Collection
               </Text>
               <View style={styles.statRow}>
@@ -630,7 +645,14 @@ export const StatsScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.delay(200).duration(300)} layout={LinearTransition.duration(200)}>
           <Card style={styles.card} mode="elevated">
             <Card.Content>
-              <Text variant="titleLarge" style={styles.cardTitle}>
+              <Text
+                variant="titleLarge"
+                style={[
+                  MD3_TEXT_VARIANTS.titleLarge,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
                 Special Completions
               </Text>
               <View style={styles.specialStats}>
@@ -665,7 +687,14 @@ export const StatsScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.delay(400).duration(300)} layout={LinearTransition.duration(200)}>
           <Card style={styles.card} mode="elevated">
             <Card.Content>
-              <Text variant="titleLarge" style={styles.cardTitle}>
+              <Text
+                variant="titleLarge"
+                style={[
+                  MD3_TEXT_VARIANTS.titleLarge,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
                 Average Attempts
               </Text>
               <View style={styles.specialStats}>
@@ -691,7 +720,14 @@ export const StatsScreen: React.FC = () => {
           <Animated.View entering={FadeInDown.delay(500).duration(300)} layout={LinearTransition.duration(200)}>
             <Card style={styles.card} mode="elevated">
               <Card.Content>
-                <Text variant="titleLarge" style={styles.cardTitle}>
+                <Text
+                  variant="titleLarge"
+                  style={[
+                    MD3_TEXT_VARIANTS.titleLarge,
+                    styles.cardTitle,
+                    { color: theme.colors.primary }
+                  ]}
+                >
                   Hardest Platinum Levels
                 </Text>
                 {difficultyAttemptsStats.topHardestPlatinum.map((level, index) => (
@@ -712,7 +748,14 @@ export const StatsScreen: React.FC = () => {
           <Animated.View entering={FadeInDown.delay(600).duration(300)} layout={LinearTransition.duration(200)}>
             <Card style={styles.card} mode="elevated">
               <Card.Content>
-                <Text variant="titleLarge" style={styles.cardTitle}>
+                <Text
+                  variant="titleLarge"
+                  style={[
+                    MD3_TEXT_VARIANTS.titleLarge,
+                    styles.cardTitle,
+                    { color: theme.colors.primary }
+                  ]}
+                >
                   Hardest N.Sanely Levels
                 </Text>
                 {difficultyAttemptsStats.topHardestNsanely.map((level, index) => (
@@ -733,7 +776,14 @@ export const StatsScreen: React.FC = () => {
           <Animated.View entering={FadeInDown.delay(700).duration(300)} layout={LinearTransition.duration(200)}>
             <Card style={styles.card} mode="elevated">
               <Card.Content>
-                <Text variant="titleLarge" style={styles.cardTitle}>
+                <Text
+                  variant="titleLarge"
+                  style={[
+                    MD3_TEXT_VARIANTS.titleLarge,
+                    styles.cardTitle,
+                    { color: theme.colors.primary }
+                  ]}
+                >
                   Most Tried Levels
                 </Text>
                 {difficultyAttemptsStats.topMostTried.map((level, index) => (
@@ -753,7 +803,14 @@ export const StatsScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.delay(800).duration(300)} layout={LinearTransition.duration(200)}>
           <Card style={styles.card} mode="elevated">
             <Card.Content>
-              <Text variant="titleLarge" style={styles.cardTitle}>
+              <Text
+                variant="titleLarge"
+                style={[
+                  MD3_TEXT_VARIANTS.titleLarge,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
                 Time Trial Average
               </Text>
               <View style={styles.specialStats}>
@@ -775,7 +832,14 @@ export const StatsScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.delay(900).duration(300)} layout={LinearTransition.duration(200)}>
           <Card style={styles.card} mode="elevated">
             <Card.Content>
-              <Text variant="titleLarge" style={styles.cardTitle}>
+              <Text
+                variant="titleLarge"
+                style={[
+                  MD3_TEXT_VARIANTS.titleLarge,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
                 Achievements
               </Text>
               <View style={styles.achievementRow}>
@@ -804,7 +868,14 @@ export const StatsScreen: React.FC = () => {
           <Animated.View entering={FadeInDown.delay(1000).duration(300)} layout={LinearTransition.duration(200)}>
             <Card style={styles.card} mode="elevated">
               <Card.Content>
-                <Text variant="titleLarge" style={styles.cardTitle}>
+                <Text
+                  variant="titleLarge"
+                  style={[
+                    MD3_TEXT_VARIANTS.titleLarge,
+                    styles.cardTitle,
+                    { color: theme.colors.primary }
+                  ]}
+                >
                   Dimension Analysis
                 </Text>
                 <View style={styles.achievementRow}>
@@ -837,7 +908,14 @@ export const StatsScreen: React.FC = () => {
           <Animated.View entering={FadeInDown.delay(1100).duration(300)} layout={LinearTransition.duration(200)}>
             <Card style={styles.card} mode="elevated">
               <Card.Content>
-                <Text variant="titleLarge" style={styles.cardTitle}>
+                <Text
+                  variant="titleLarge"
+                  style={[
+                    MD3_TEXT_VARIANTS.titleLarge,
+                    styles.cardTitle,
+                    { color: theme.colors.primary }
+                  ]}
+                >
                   Timeline Highlights
                 </Text>
                 {timelineStats.longestStreak > 0 && (
@@ -870,7 +948,14 @@ export const StatsScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.delay(1200).duration(300)} layout={LinearTransition.duration(200)}>
           <Card style={styles.card} mode="elevated">
             <Card.Content>
-              <Text variant="titleLarge" style={styles.cardTitle}>
+              <Text
+                variant="titleLarge"
+                style={[
+                  MD3_TEXT_VARIANTS.titleLarge,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
                 What's Remaining
               </Text>
 
@@ -1002,9 +1087,9 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 16,
+    borderRadius: 12,
   },
   cardTitle: {
-    fontWeight: '700',
     marginBottom: 16,
   },
   statRow: {
