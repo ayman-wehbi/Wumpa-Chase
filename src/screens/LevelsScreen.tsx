@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Text, ActivityIndicator, useTheme, Surface } from 'react-native-paper';
+import { Text, ActivityIndicator, useTheme, Surface } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProgress } from '../context/ProgressContext';
 import { LevelCard } from '../components/level/LevelCard';
 import { DIMENSIONS, getLevelsByDimension } from '../data/levels';
@@ -9,6 +10,7 @@ import { MD3_TEXT_VARIANTS } from '../constants/typography';
 export const LevelsScreen: React.FC = () => {
   const theme = useTheme();
   const { levels, loading } = useProgress();
+  const insets = useSafeAreaInsets();
 
   if (loading) {
     return (
@@ -22,14 +24,10 @@ export const LevelsScreen: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Appbar.Header elevated>
-        <Appbar.Content title="Wumpa Platter" />
-      </Appbar.Header>
-
+    <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         {DIMENSIONS.map(dimension => {

@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View, Dimensions } from 'react-native';
-import { Appbar, Card, Text, useTheme, ProgressBar } from 'react-native-paper';
+import { Card, Text, useTheme, ProgressBar } from 'react-native-paper';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import Animated, {
   FadeInDown,
@@ -14,6 +14,7 @@ import Animated, {
   Easing,
   LinearTransition,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProgress } from '../context/ProgressContext';
 import { DIMENSIONS, getLevelsByDimension } from '../data/levels';
 import { CompletionStats, DimensionStats } from '../types';
@@ -24,6 +25,7 @@ const screenWidth = Dimensions.get('window').width;
 export const StatsScreen: React.FC = () => {
   const theme = useTheme();
   const { levels } = useProgress();
+  const insets = useSafeAreaInsets();
 
   // State for displaying animated values
   const [displayOverallPercentage, setDisplayOverallPercentage] = useState(0);
@@ -575,14 +577,10 @@ export const StatsScreen: React.FC = () => {
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Appbar.Header elevated>
-        <Appbar.Content title="Statistics" />
-      </Appbar.Header>
-
+    <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeInDown.duration(300)} layout={LinearTransition.duration(200)}>
