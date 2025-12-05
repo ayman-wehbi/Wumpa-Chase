@@ -36,6 +36,7 @@ interface ProgressContextType {
   deleteNSanelyNote: (levelId: string) => void;
   resetNSanely: (levelId: string) => void;
   resetAllProgress: () => void;
+  loadProgressFromBackup: (backupState: AppState) => Promise<void>;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(
@@ -336,6 +337,24 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({
     }
   };
 
+  const loadProgressFromBackup = async (backupState: AppState) => {
+    try {
+      // Validate backup state
+      if (!backupState.levels || !Array.isArray(backupState.levels)) {
+        throw new Error('Invalid backup data');
+      }
+
+      // Update state
+      setLevels(backupState.levels);
+
+      // Save to AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(backupState));
+    } catch (error) {
+      console.error('Failed to load backup:', error);
+      throw error;
+    }
+  };
+
   const value: ProgressContextType = {
     levels,
     loading,
@@ -356,6 +375,7 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({
     deleteNSanelyNote,
     resetNSanely,
     resetAllProgress,
+    loadProgressFromBackup,
   };
 
   return (

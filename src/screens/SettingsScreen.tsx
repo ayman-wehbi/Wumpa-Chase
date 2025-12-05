@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import {
   Appbar,
@@ -8,10 +8,15 @@ import {
   Button,
   Dialog,
   Portal,
+  Snackbar,
   useTheme as usePaperTheme,
 } from 'react-native-paper';
 import { useTheme } from '../context/ThemeContext';
 import { useProgress } from '../context/ProgressContext';
+import { useBackup } from '../hooks/useBackup';
+import { BackupListDialog } from '../components/backup/BackupListDialog';
+import { BackupPreview } from '../components/backup/BackupPreview';
+import BackupService from '../services/BackupService';
 import type { ThemeMode } from '../context/ThemeContext';
 
 export const SettingsScreen: React.FC = () => {
@@ -20,6 +25,30 @@ export const SettingsScreen: React.FC = () => {
   const { resetAllProgress } = useProgress();
   const [showResetDialog, setShowResetDialog] = useState(false);
 
+  // Backup state
+  const {
+    loading,
+    backupList,
+    refreshBackupList,
+    exportBackup,
+    restoreBackup,
+    getBackupStats,
+  } = useBackup();
+
+  const [showBackupList, setShowBackupList] = useState(false);
+  const [showBackupPreview, setShowBackupPreview] = useState(false);
+  const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
+  const [previewStats, setPreviewStats] = useState<any>(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  // Load backup list when dialog opens
+  useEffect(() => {
+    if (showBackupList) {
+      refreshBackupList();
+    }
+  }, [showBackupList, refreshBackupList]);
+
   const handleThemeChange = (value: string) => {
     setThemeMode(value as ThemeMode);
   };
@@ -27,6 +56,49 @@ export const SettingsScreen: React.FC = () => {
   const handleResetProgress = () => {
     resetAllProgress();
     setShowResetDialog(false);
+  };
+
+  // Handle export
+  const handleExportBackup = async () => {
+    const result = await exportBackup();
+    if (result.success) {
+      setSnackbarMessage('Backup exported successfully!');
+      setSnackbarVisible(true);
+    } else {
+      setSnackbarMessage(`Export failed: ${result.error}`);
+      setSnackbarVisible(true);
+    }
+  };
+
+  // Handle backup selection
+  const handleSelectBackup = async (filepath: string) => {
+    setSelectedBackup(filepath);
+    setShowBackupList(false);
+
+    // Load and preview backup
+    const backupData = await BackupService.loadBackup(filepath);
+    if (backupData) {
+      const stats = getBackupStats(backupData);
+      setPreviewStats(stats);
+      setShowBackupPreview(true);
+    }
+  };
+
+  // Handle restore confirmation
+  const handleRestoreConfirm = async () => {
+    if (selectedBackup) {
+      setShowBackupPreview(false);
+      const result = await restoreBackup(selectedBackup);
+
+      if (result.success) {
+        setSnackbarMessage('Progress restored successfully!');
+      } else {
+        setSnackbarMessage(`Restore failed: ${result.error}`);
+      }
+      setSnackbarVisible(true);
+      setSelectedBackup(null);
+      setPreviewStats(null);
+    }
   };
 
   return (
@@ -92,8 +164,30 @@ export const SettingsScreen: React.FC = () => {
               variant="bodyMedium"
               style={[styles.sectionDescription, { color: paperTheme.colors.onSurfaceVariant }]}
             >
-              Manage your progress data
+              Manage your progress data and backups
             </Text>
+
+            <Button
+              mode="contained"
+              onPress={handleExportBackup}
+              icon="export"
+              buttonColor={paperTheme.colors.primary}
+              style={styles.backupButton}
+              loading={loading}
+              disabled={loading}
+            >
+              Export Backup
+            </Button>
+
+            <Button
+              mode="outlined"
+              onPress={() => setShowBackupList(true)}
+              icon="backup-restore"
+              style={styles.backupButton}
+              disabled={loading}
+            >
+              Restore from Backup
+            </Button>
 
             <Button
               mode="contained"
@@ -108,9 +202,9 @@ export const SettingsScreen: React.FC = () => {
 
             <Text
               variant="bodySmall"
-              style={[styles.warningText, { color: paperTheme.colors.error }]}
+              style={[styles.infoText, { color: paperTheme.colors.onSurfaceVariant }]}
             >
-              Warning: This will permanently delete all your tracked progress
+              Backups are created automatically once per day. You can also export and restore manually.
             </Text>
           </Card.Content>
         </Card>
@@ -126,7 +220,7 @@ export const SettingsScreen: React.FC = () => {
                 App Name
               </Text>
               <Text variant="bodyMedium" style={[styles.aboutValue, { color: paperTheme.colors.onSurfaceVariant }]}>
-                Crash Bandicoot 4 Tracker
+                Wumpa Platter
               </Text>
             </View>
 
@@ -135,29 +229,23 @@ export const SettingsScreen: React.FC = () => {
                 Version
               </Text>
               <Text variant="bodyMedium" style={[styles.aboutValue, { color: paperTheme.colors.onSurfaceVariant }]}>
-                1.0.0
+                1.0.3
               </Text>
             </View>
-
-            <View style={styles.aboutRow}>
-              <Text variant="bodyMedium" style={styles.aboutLabel}>
-                Total Levels
-              </Text>
-              <Text variant="bodyMedium" style={[styles.aboutValue, { color: paperTheme.colors.onSurfaceVariant }]}>
-                38
-              </Text>
-            </View>
-
-            <Text
-              variant="bodySmall"
-              style={[styles.aboutDescription, { color: paperTheme.colors.onSurfaceVariant }]}
-            >
-              Track your completion progress for all levels, gems, platinum time trials, and N.Sanely Perfect relics in Crash Bandicoot 4: It's About Time.
-            </Text>
           </Card.Content>
         </Card>
 
         <View style={styles.bottomPadding} />
+
+        <Text
+          variant="bodyMedium"
+          style={[
+            styles.brandingText,
+            { color: paperTheme.colors.onSurfaceVariant }
+          ]}
+        >
+          Nico Works
+        </Text>
       </ScrollView>
 
       <Portal>
@@ -184,6 +272,37 @@ export const SettingsScreen: React.FC = () => {
           </Dialog.Actions>
         </Dialog>
       </Portal>
+
+      <BackupListDialog
+        visible={showBackupList}
+        onDismiss={() => setShowBackupList(false)}
+        backupList={backupList}
+        onSelectBackup={handleSelectBackup}
+        loading={loading}
+      />
+
+      <BackupPreview
+        visible={showBackupPreview}
+        onDismiss={() => {
+          setShowBackupPreview(false);
+          setSelectedBackup(null);
+          setPreviewStats(null);
+        }}
+        onConfirm={handleRestoreConfirm}
+        stats={previewStats}
+      />
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: 'OK',
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };
@@ -214,9 +333,17 @@ const styles = StyleSheet.create({
   radioItem: {
     marginVertical: -4,
   },
+  backupButton: {
+    marginTop: 12,
+  },
   resetButton: {
     marginTop: 16,
     marginBottom: 8,
+  },
+  infoText: {
+    marginTop: 16,
+    textAlign: 'center',
+    lineHeight: 18,
   },
   warningText: {
     fontStyle: 'italic',
@@ -243,5 +370,10 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: 24,
+  },
+  brandingText: {
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 24,
   },
 });

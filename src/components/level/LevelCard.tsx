@@ -73,9 +73,15 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
           <View style={styles.header}>
             <Text
               variant="titleLarge"
+              numberOfLines={1}
+              ellipsizeMode="tail"
               style={[
                 MD3_TEXT_VARIANTS.titleLarge,
-                { color: theme.colors.primary }
+                {
+                  color: theme.colors.primary,
+                  flex: 1,
+                  flexShrink: 1
+                }
               ]}
             >
               {level.name}

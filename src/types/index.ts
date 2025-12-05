@@ -96,3 +96,8 @@ export interface DimensionStats {
   collectedGems: number;
   completionPercentage: number;
 }
+
+/**
+ * Backup-related types
+ */
+export * from './backup';
