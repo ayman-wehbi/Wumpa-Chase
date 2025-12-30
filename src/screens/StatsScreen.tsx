@@ -137,12 +137,14 @@ export const StatsScreen: React.FC = () => {
     const completedPlatinum = levels.filter(l => l.progress.platinumTimeTrial.completed);
     const completedNsanely = levels.filter(l => l.progress.nsanelyPerfectRelic.completed);
 
-    const avgPlatinumAttempts = completedPlatinum.length > 0
-      ? completedPlatinum.reduce((sum, l) => sum + l.progress.platinumTimeTrial.attempts, 0) / completedPlatinum.length
+    const platinumWithAttempts = completedPlatinum.filter(l => l.progress.platinumTimeTrial.attempts > 0);
+    const avgPlatinumAttempts = platinumWithAttempts.length > 0
+      ? platinumWithAttempts.reduce((sum, l) => sum + l.progress.platinumTimeTrial.attempts, 0) / platinumWithAttempts.length
       : 0;
 
-    const avgNsanelyAttempts = completedNsanely.length > 0
-      ? completedNsanely.reduce((sum, l) => sum + l.progress.nsanelyPerfectRelic.attempts, 0) / completedNsanely.length
+    const nsanelyWithAttempts = completedNsanely.filter(l => l.progress.nsanelyPerfectRelic.attempts > 0);
+    const avgNsanelyAttempts = nsanelyWithAttempts.length > 0
+      ? nsanelyWithAttempts.reduce((sum, l) => sum + l.progress.nsanelyPerfectRelic.attempts, 0) / nsanelyWithAttempts.length
       : 0;
 
     return {
