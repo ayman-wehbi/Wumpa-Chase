@@ -98,6 +98,36 @@ export interface DimensionStats {
 }
 
 /**
+ * Share level data (subset of LevelData for sharing)
+ */
+export interface ShareLevelData {
+  name: string;
+  dimension: string;
+  platinum: {
+    completed: boolean;
+    attempts: number;
+    difficulty?: number;
+    time?: string;
+    completionDate?: string;
+  };
+  nsanely: {
+    completed: boolean;
+    attempts: number;
+    difficulty?: number;
+    completionDate?: string;
+  };
+}
+
+/**
+ * Share result
+ */
+export interface ShareResult {
+  success: boolean;
+  error?: string;
+  cancelled?: boolean;
+}
+
+/**
  * Backup-related types
  */
 export * from './backup';
