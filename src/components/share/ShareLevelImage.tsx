@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     gap: 2,
     flexWrap: 'wrap',
     justifyContent: 'center',
-    maxWidth: 130,
+    maxWidth: 160,
   },
   difficultyText: {
     fontSize: 24,

@@ -1,6 +1,7 @@
-import { Share, Platform, PermissionsAndroid } from 'react-native';
+import { Platform, PermissionsAndroid } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import RNFS from 'react-native-fs';
+import Share from 'react-native-share';
 import { ShareResult } from '../types';
 
 /**
@@ -65,6 +66,11 @@ class ShareService {
 
       // Copy file to Pictures
       await RNFS.copyFile(imageUri, destPath);
+
+      // Trigger media scan so image appears in gallery immediately
+      if (Platform.OS === 'android') {
+        await RNFS.scanFile(destPath);
+      }
 
       // Cleanup temp file
       await this.cleanup(imageUri);
@@ -188,31 +194,37 @@ class ShareService {
    */
   private async shareImage(uri: string, levelName: string): Promise<void> {
     try {
-      // Ensure file URI has proper prefix
-      const fileUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+      // Remove file:// prefix if present for react-native-share
+      const filePath = uri.replace('file://', '');
 
-      console.log('Sharing image from:', fileUri);
+      console.log('Sharing image from:', filePath);
 
-      // On Android, Share.share with url works for images
       const shareOptions = {
         title: `${levelName} - Wumpletion`,
         message: `Check out my ${levelName} completion in Crash Bandicoot 4!`,
-        url: fileUri,
+        url: `file://${filePath}`,
+        type: 'image/png',
+        subject: `${levelName} - Wumpletion`,
+        failOnCancel: false,
       };
 
-      const result = await Share.share(shareOptions);
+      const result = await Share.open(shareOptions);
 
-      // Handle result
-      if (result.action === Share.dismissedAction) {
-        // User cancelled - throw error with imageUri for cleanup
+      // Check if user cancelled
+      if (result.dismissedAction) {
         const error: any = new Error('User cancelled share');
         error.imageUri = uri;
         throw error;
       }
 
-      // Successfully shared or sharedAction
       console.log('Share successful:', result);
-    } catch (error) {
+    } catch (error: any) {
+      // If user cancelled or closed share sheet
+      if (error.message && error.message.includes('User did not share')) {
+        const cancelError: any = new Error('User cancelled share');
+        cancelError.imageUri = uri;
+        throw cancelError;
+      }
       console.error('Share sheet error:', error);
       throw error;
     }
