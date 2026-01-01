@@ -1,6 +1,6 @@
 import RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Share } from 'react-native';
+import Share from 'react-native-share';
 import { AppState, BackupData, BackupMetadata, BackupFileInfo, BackupStats } from '../types';
 import { ThemeMode } from '../context/ThemeContext';
 
@@ -144,29 +144,39 @@ class BackupService {
         theme: themeMode,
       };
 
-      // Create in temporary location first
+      // Create in cache directory for sharing (FileProvider compatible)
       const timestamp = new Date()
         .toISOString()
         .replace(/[:.]/g, '-')
         .slice(0, -5);
       const filename = `crash_backup_manual_${timestamp}.crashbackup`;
-      const tempPath = `${RNFS.DocumentDirectoryPath}/${filename}`;
+      const tempPath = `${RNFS.CachesDirectoryPath}/${filename}`;
 
       await RNFS.writeFile(tempPath, JSON.stringify(backupData, null, 2), 'utf8');
 
-      // Trigger share sheet
+      // Trigger share sheet using react-native-share
       const shareOptions = {
         title: 'Export Crash Tracker Backup',
         message: 'Save your Crash Bandicoot 4 progress backup',
         url: `file://${tempPath}`,
         type: 'application/json',
+        filename: filename,
         subject: 'Crash Tracker Backup',
+        failOnCancel: false,
       };
 
-      await Share.share(shareOptions);
-
-      console.log('Manual backup exported:', filename);
-      return { success: true, filepath: tempPath };
+      try {
+        await Share.open(shareOptions);
+        console.log('Manual backup exported:', filename);
+        return { success: true, filepath: tempPath };
+      } catch (error: any) {
+        // User cancelled - still consider it successful
+        if (error.message && error.message.includes('User did not share')) {
+          console.log('User cancelled backup export');
+          return { success: true, filepath: tempPath };
+        }
+        throw error;
+      }
     } catch (error) {
       console.error('Export failed:', error);
       return { success: false, error: String(error) };
@@ -186,7 +196,7 @@ class BackupService {
       const files = await RNFS.readDir(BACKUP_DIR);
       const backupFiles = files
         .filter(f => f.name.endsWith('.crashbackup'))
-        .sort((a, b) => b.mtime.getTime() - a.mtime.getTime()); // Newest first
+        .sort((a, b) => (b.mtime?.getTime() ?? 0) - (a.mtime?.getTime() ?? 0)); // Newest first
 
       const backupInfos: BackupFileInfo[] = [];
       for (const file of backupFiles) {
@@ -217,6 +227,50 @@ class BackupService {
   }
 
   /**
+   * Get list of manual backups from Downloads folder
+   */
+  async getDownloadsBackupList(): Promise<BackupFileInfo[]> {
+    try {
+      const downloadsPath = `${RNFS.DownloadDirectoryPath}`;
+      const exists = await RNFS.exists(downloadsPath);
+      if (!exists) {
+        return [];
+      }
+
+      const files = await RNFS.readDir(downloadsPath);
+      const backupFiles = files
+        .filter(f => f.name.endsWith('.crashbackup'))
+        .sort((a, b) => (b.mtime?.getTime() ?? 0) - (a.mtime?.getTime() ?? 0)); // Newest first
+
+      const backupInfos: BackupFileInfo[] = [];
+      for (const file of backupFiles) {
+        try {
+          const content = await RNFS.readFile(file.path, 'utf8');
+          const data: BackupData = JSON.parse(content);
+
+          backupInfos.push({
+            filename: file.name,
+            filepath: file.path,
+            timestamp: data.metadata.timestamp,
+            displayDate: new Date(data.metadata.timestamp).toLocaleString(),
+            backupType: 'manual',
+            size: file.size,
+            metadata: data.metadata,
+          });
+        } catch {
+          // Skip corrupted files
+          continue;
+        }
+      }
+
+      return backupInfos;
+    } catch (error) {
+      console.error('Failed to list downloads backups:', error);
+      return [];
+    }
+  }
+
+  /**
    * Load and parse a backup file
    */
   async loadBackup(filepath: string): Promise<BackupData | null> {
@@ -226,6 +280,22 @@ class BackupService {
       return data;
     } catch (error) {
       console.error('Failed to load backup:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Import backup from external file (content:// or file:// URI)
+   */
+  async importExternalBackup(uri: string): Promise<BackupData | null> {
+    try {
+      // Handle both content:// and file:// URIs
+      const filePath = uri.replace('file://', '');
+      const content = await RNFS.readFile(filePath, 'utf8');
+      const data: BackupData = JSON.parse(content);
+      return data;
+    } catch (error) {
+      console.error('Failed to import external backup:', error);
       return null;
     }
   }

@@ -78,6 +78,17 @@ export const useBackup = () => {
     return BackupService.calculateBackupStats(backupData);
   }, []);
 
+  // Get list of manual backups from Downloads folder
+  const getDownloadsBackupList = useCallback(async (): Promise<BackupFileInfo[]> => {
+    try {
+      const downloadsList = await BackupService.getDownloadsBackupList();
+      return downloadsList;
+    } catch (error) {
+      console.error('Failed to get downloads backup list:', error);
+      return [];
+    }
+  }, []);
+
   return {
     loading,
     backupList,
@@ -86,5 +97,6 @@ export const useBackup = () => {
     exportBackup,
     restoreBackup,
     getBackupStats,
+    getDownloadsBackupList,
   };
 };
