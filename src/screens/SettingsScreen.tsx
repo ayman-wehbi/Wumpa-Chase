@@ -22,7 +22,7 @@ import type { ThemeMode } from '../context/ThemeContext';
 export const SettingsScreen: React.FC = () => {
   const paperTheme = usePaperTheme();
   const { themeMode, setThemeMode } = useTheme();
-  const { resetAllProgress } = useProgress();
+  const { resetAllProgress, loadProgressFromBackup } = useProgress();
   const [showResetDialog, setShowResetDialog] = useState(false);
 
   // Backup state
@@ -33,9 +33,12 @@ export const SettingsScreen: React.FC = () => {
     exportBackup,
     restoreBackup,
     getBackupStats,
+    getDownloadsBackupList,
   } = useBackup();
 
   const [showBackupList, setShowBackupList] = useState(false);
+  const [showDownloadsList, setShowDownloadsList] = useState(false);
+  const [downloadsBackupList, setDownloadsBackupList] = useState<any[]>([]);
   const [showBackupPreview, setShowBackupPreview] = useState(false);
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
   const [previewStats, setPreviewStats] = useState<any>(null);
@@ -70,6 +73,18 @@ export const SettingsScreen: React.FC = () => {
     }
   };
 
+  // Handle import from Downloads
+  const handleImportBackup = async () => {
+    try {
+      const downloadsList = await getDownloadsBackupList();
+      setDownloadsBackupList(downloadsList);
+      setShowDownloadsList(true);
+    } catch (error) {
+      setSnackbarMessage('Failed to access Downloads folder');
+      setSnackbarVisible(true);
+    }
+  };
+
   // Handle backup selection
   const handleSelectBackup = async (filepath: string) => {
     setSelectedBackup(filepath);
@@ -86,19 +101,32 @@ export const SettingsScreen: React.FC = () => {
 
   // Handle restore confirmation
   const handleRestoreConfirm = async () => {
-    if (selectedBackup) {
-      setShowBackupPreview(false);
-      const result = await restoreBackup(selectedBackup);
+    setShowBackupPreview(false);
 
-      if (result.success) {
-        setSnackbarMessage('Progress restored successfully!');
-      } else {
-        setSnackbarMessage(`Restore failed: ${result.error}`);
+    let result;
+    if (selectedBackup) {
+      // Restore from automatic backup
+      result = await restoreBackup(selectedBackup);
+    } else if (previewStats?.backupData) {
+      // Restore from imported external file
+      const { backupData } = previewStats;
+      try {
+        await loadProgressFromBackup(backupData.progress);
+        setThemeMode(backupData.theme);
+        result = { success: true };
+      } catch (error) {
+        result = { success: false, error: String(error) };
       }
-      setSnackbarVisible(true);
-      setSelectedBackup(null);
-      setPreviewStats(null);
     }
+
+    if (result?.success) {
+      setSnackbarMessage('Progress restored successfully!');
+    } else {
+      setSnackbarMessage(`Restore failed: ${result?.error}`);
+    }
+    setSnackbarVisible(true);
+    setSelectedBackup(null);
+    setPreviewStats(null);
   };
 
   return (
@@ -190,6 +218,16 @@ export const SettingsScreen: React.FC = () => {
             </Button>
 
             <Button
+              mode="outlined"
+              onPress={handleImportBackup}
+              icon="file-upload"
+              style={styles.backupButton}
+              disabled={loading}
+            >
+              Import Backup File
+            </Button>
+
+            <Button
               mode="contained"
               onPress={() => setShowResetDialog(true)}
               icon="delete-forever"
@@ -229,7 +267,7 @@ export const SettingsScreen: React.FC = () => {
                 Version
               </Text>
               <Text variant="bodyMedium" style={[styles.aboutValue, { color: paperTheme.colors.onSurfaceVariant }]}>
-                1.0.3
+                1.1.1
               </Text>
             </View>
           </Card.Content>
@@ -277,6 +315,14 @@ export const SettingsScreen: React.FC = () => {
         visible={showBackupList}
         onDismiss={() => setShowBackupList(false)}
         backupList={backupList}
+        onSelectBackup={handleSelectBackup}
+        loading={loading}
+      />
+
+      <BackupListDialog
+        visible={showDownloadsList}
+        onDismiss={() => setShowDownloadsList(false)}
+        backupList={downloadsBackupList}
         onSelectBackup={handleSelectBackup}
         loading={loading}
       />
