@@ -52,7 +52,7 @@ export const LevelCard: React.FC<LevelCardProps> = ({ level }) => {
   // Trigger bounce animation and adjust margin when expanded state changes
   useEffect(() => {
     triggerBounce(expanded);
-    animatedMargin.value = withTiming(expanded ? 16 : 8, { duration: 200 });
+    animatedMargin.value = withTiming(expanded ? 20 : 8, { duration: 200 });
   }, [expanded]);
 
   // Check if level has any completion data for share button
