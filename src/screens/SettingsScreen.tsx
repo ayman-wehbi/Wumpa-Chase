@@ -17,6 +17,7 @@ import { useBackup } from '../hooks/useBackup';
 import { BackupListDialog } from '../components/backup/BackupListDialog';
 import { BackupPreview } from '../components/backup/BackupPreview';
 import BackupService from '../services/BackupService';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ThemeMode } from '../context/ThemeContext';
 
 export const SettingsScreen: React.FC = () => {
@@ -24,6 +25,7 @@ export const SettingsScreen: React.FC = () => {
   const { themeMode, setThemeMode } = useTheme();
   const { resetAllProgress, loadProgressFromBackup } = useProgress();
   const [showResetDialog, setShowResetDialog] = useState(false);
+    const insets = useSafeAreaInsets();
 
   // Backup state
   const {
@@ -130,26 +132,18 @@ export const SettingsScreen: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
-      <Appbar.Header elevated>
-        <Appbar.Content title="Settings" />
-      </Appbar.Header>
+    <View style={[styles.container, { backgroundColor: paperTheme.colors.background, paddingTop: insets.top }]}>
+
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         <Card style={styles.card} mode="elevated">
           <Card.Content>
             <Text variant="titleLarge" style={styles.sectionTitle}>
               Appearance
-            </Text>
-            <Text
-              variant="bodyMedium"
-              style={[styles.sectionDescription, { color: paperTheme.colors.onSurfaceVariant }]}
-            >
-              Choose your preferred theme
             </Text>
 
             <View style={styles.radioGroup}>
@@ -187,12 +181,6 @@ export const SettingsScreen: React.FC = () => {
           <Card.Content>
             <Text variant="titleLarge" style={styles.sectionTitle}>
               Data
-            </Text>
-            <Text
-              variant="bodyMedium"
-              style={[styles.sectionDescription, { color: paperTheme.colors.onSurfaceVariant }]}
-            >
-              Manage your progress data and backups
             </Text>
 
             <Button
@@ -242,7 +230,7 @@ export const SettingsScreen: React.FC = () => {
               variant="bodySmall"
               style={[styles.infoText, { color: paperTheme.colors.onSurfaceVariant }]}
             >
-              Backups are created automatically once per day. You can also export and restore manually.
+              Backups are created automatically once per day when app is opened.
             </Text>
           </Card.Content>
         </Card>
@@ -267,7 +255,7 @@ export const SettingsScreen: React.FC = () => {
                 Version
               </Text>
               <Text variant="bodyMedium" style={[styles.aboutValue, { color: paperTheme.colors.onSurfaceVariant }]}>
-                1.1.1
+                1.1.2
               </Text>
             </View>
           </Card.Content>
@@ -284,6 +272,7 @@ export const SettingsScreen: React.FC = () => {
         >
           Nico Works
         </Text>
+
       </ScrollView>
 
       <Portal>
