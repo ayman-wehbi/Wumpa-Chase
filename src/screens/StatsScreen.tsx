@@ -147,12 +147,17 @@ export const StatsScreen: React.FC = () => {
       ? nsanelyWithAttempts.reduce((sum, l) => sum + l.progress.nsanelyPerfectRelic.attempts, 0) / nsanelyWithAttempts.length
       : 0;
 
+    const totalPlatinumAttempts = completedPlatinum.reduce((sum, l) => sum + l.progress.platinumTimeTrial.attempts, 0);
+    const totalNsanelyAttempts = completedNsanely.reduce((sum, l) => sum + l.progress.nsanelyPerfectRelic.attempts, 0);
+
     return {
       topHardestPlatinum,
       topHardestNsanely,
       topMostTried,
       avgPlatinumAttempts,
       avgNsanelyAttempts,
+      totalPlatinumAttempts,
+      totalNsanelyAttempts,
     };
   }, [levels]);
 
@@ -168,7 +173,7 @@ export const StatsScreen: React.FC = () => {
       const minutes = parseInt(parts[0]);
       const secondsParts = parts[1].split('.');
       const seconds = parseInt(secondsParts[0]);
-      const milliseconds = parseInt(secondsParts[1] || '0');
+      const milliseconds = parseInt((secondsParts[1] || '0').slice(0, 3).padEnd(3, '0'));
 
       // Validate parsed values
       if (isNaN(minutes) || isNaN(seconds) || isNaN(milliseconds)) return Infinity;
@@ -183,7 +188,7 @@ export const StatsScreen: React.FC = () => {
       if (!isFinite(ms) || ms < 0) return 'N/A';
       const minutes = Math.floor(ms / 60000);
       const seconds = Math.floor((ms % 60000) / 1000);
-      const millis = ms % 1000;
+      const millis = Math.round(ms % 1000);
       return `${minutes}:${seconds.toString().padStart(2, '0')}.${millis.toString().padStart(3, '0')}`;
     };
 
@@ -715,6 +720,38 @@ export const StatsScreen: React.FC = () => {
           </Card>
         </Animated.View>
 
+        {/* Total Attempts Stats */}
+        <Animated.View entering={FadeInDown.delay(450).duration(300)} layout={LinearTransition.duration(200)}>
+          <Card style={styles.card} mode="elevated">
+            <Card.Content>
+              <Text
+                variant="titleLarge"
+                style={[
+                  MD3_TEXT_VARIANTS.titleLarge,
+                  styles.cardTitle,
+                  { color: theme.colors.primary }
+                ]}
+              >
+                Total Attempts
+              </Text>
+              <View style={styles.specialStats}>
+                <View style={styles.specialStat}>
+                  <Text variant="headlineMedium" style={{ color: theme.colors.secondary }}>
+                    {difficultyAttemptsStats.totalPlatinumAttempts}
+                  </Text>
+                  <Text variant="bodyMedium">Platinum Total</Text>
+                </View>
+                <View style={styles.specialStat}>
+                  <Text variant="headlineMedium" style={{ color: theme.colors.tertiary }}>
+                    {difficultyAttemptsStats.totalNsanelyAttempts}
+                  </Text>
+                  <Text variant="bodyMedium">N.Sanely Total</Text>
+                </View>
+              </View>
+            </Card.Content>
+          </Card>
+        </Animated.View>
+
         {/* Top 5 Hardest Platinum Levels */}
         {difficultyAttemptsStats.topHardestPlatinum.length > 0 && (
           <Animated.View entering={FadeInDown.delay(500).duration(300)} layout={LinearTransition.duration(200)}>
@@ -819,9 +856,6 @@ export const StatsScreen: React.FC = () => {
                     {timeTrialStats.avgTimeFormatted}
                   </Text>
                   <Text variant="bodyMedium">Avg Time</Text>
-                  <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
-                    Speed Demon
-                  </Text>
                 </View>
               </View>
             </Card.Content>
@@ -855,7 +889,7 @@ export const StatsScreen: React.FC = () => {
               {achievementStats.mostPersistent && achievementStats.mostPersistent.attempts > 0 && (
                 <View style={styles.achievementRow}>
                   <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
-                    Most Persistent: {achievementStats.mostPersistent.name} ({achievementStats.mostPersistent.attempts} attempts)
+                    Most Persistent: {achievementStats.mostPersistent.name}
                   </Text>
                 </View>
               )}
